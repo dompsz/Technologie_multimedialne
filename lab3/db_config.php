@@ -1,14 +1,17 @@
 <?php
-// Lab 3 Database Configuration
-$host = "localhost";
-$db_name = "pszczolkowski_lab3";
-$db_user = "pszczolkowski_lab3_user";
-$db_pass = "password";
+// Konfiguracja Bazy Danych - Laboratorium 3
+require_once __DIR__ . '/../load_env.php';
+
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$db_name = 'pszczolk_z3'; 
+$db_user = 'pszczolk_z3';   
+$db_pass = $_ENV['DB_PASS'] ?? '';
 
 try {
-    $conn = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8", $db_user, $db_pass);
+    $conn = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("Błąd połączenia z bazą danych.");
+    die("Błąd połączenia z bazą danych Laboratorium 3.");
 }
 ?>
