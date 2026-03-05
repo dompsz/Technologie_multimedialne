@@ -2,6 +2,8 @@
 // Konfiguracja Bazy Danych - Laboratorium 3
 require_once __DIR__ . '/../load_env.php';
 
+loadEnv(__DIR__ . '/.env');
+
 $host = $_ENV['DB_HOST'] ?? 'localhost';
 $db_name = 'pszczolk_z3'; 
 $db_user = 'pszczolk_z3';   
@@ -12,6 +14,6 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("Błąd połączenia z bazą danych Laboratorium 3.");
+    die("Błąd połączenia Lab 3: " . $e->getMessage());
 }
 ?>
