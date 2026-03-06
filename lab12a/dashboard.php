@@ -17,42 +17,30 @@ if(!isset($_SESSION['lab12a_user_id'])) {
     <style>
         .dashboard-container { padding: 5px 15px; }
         .card { margin-bottom: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.8); background: var(--card-bg); padding: 10px !important; }
-        
-        .scada-viz { 
-            position: relative; background: #000; border: 1px solid var(--border-color); 
-            border-radius: 8px; overflow: hidden; height: 340px; width: 100%;
-        }
-        
-        /* Tagi i Alarmy - pozycjonowanie wyłącznie PROCENTOWE */
-        .sensor-tag {
-            position: absolute; background: rgba(0, 0, 0, 0.95); color: #0f0; 
-            padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; font-size: 12px;
-            border: 1px solid #0f06; transform: translate(-50%, -50%); z-index: 10;
-        }
-        
-        .alarm-icon { position: absolute; font-size: 24px; transform: translate(-50%, -50%); display: none; z-index: 15; pointer-events: none; }
-        
+        .scada-viz { position: relative; background: #000; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; height: 340px; width: 100%; }
+        .sensor-tag { position: absolute; background: rgba(0, 0, 0, 0.95); color: #0f0; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; font-size: 12px; border: 1px solid #0f06; transform: translate(-50%, -50%); z-index: 10; }
+        .alarm-icon { position: absolute; font-size: 22px; transform: translate(-50%, -50%); display: none; z-index: 15; pointer-events: none; }
         #fan-container { position: absolute; width: 45px; height: 45px; transform: translate(-50%, -50%); z-index: 12; }
         .fan-svg { width: 100%; height: 100%; fill: #4dabff; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin-fast { animation: spin 0.3s linear infinite; }
         .spin-medium { animation: spin 0.8s linear infinite; }
         .spin-slow { animation: spin 2s linear infinite; }
-
         #scada-svg { width: 100%; height: 100%; display: block; }
         .table-scroll { max-height: 235px; overflow-y: auto; }
-        
         .form-label-sm { font-size: 0.8rem; font-weight: bold; color: #fff; margin-bottom: 4px; }
-        .form-check-input { width: 2.5em; height: 1.25em; border: 2px solid #666; background-color: #222; cursor: pointer; }
+        .form-check-input { width: 2.5em; height: 1.25em; border: 2px solid #666; background-color: #222; }
         .form-check-input:checked { background-color: #ff0000; border-color: #ff4444; }
-        .btn-save { margin-top: 24px; }
+        .btn-save { margin-top: 24px; background-color: var(--accent-color) !important; color: #000 !important; font-weight: bold; border: none; }
+        .btn-save:hover { background-color: var(--accent-hover) !important; }
+        .nav-logout { margin-bottom: 4px; }
     </style>
 </head>
 <body class="bg-dark text-light">
 
 <nav class="navbar navbar-dark bg-black mb-1 py-1 px-4 border-bottom border-secondary">
     <a class="navbar-brand fw-bold" href="../index.php">Lab 12a</a>
-    <div>
+    <div class="nav-logout">
         <span class="text-secondary me-3 small">Operator: <?php echo htmlspecialchars($_SESSION['lab12a_username']); ?></span>
         <a href="logout.php" class="btn btn-outline-danger btn-sm py-0">Wyloguj</a>
     </div>
@@ -72,22 +60,10 @@ if(!isset($_SESSION['lab12a_user_id'])) {
                         <div class="col-2"><button type="submit" class="btn btn-primary btn-sm w-100 btn-save">ZAPISZ</button></div>
                     </div>
                     <div class="row g-2 small mt-1">
-                        <div class="col-3">
-                            <label class="form-label-sm d-block">Terrorysta</label>
-                            <input class="form-check-input" type="checkbox" name="terrorysta">
-                        </div>
-                        <div class="col-3">
-                            <label class="form-label-sm">Pożar</label>
-                            <select name="pozar" class="form-select form-select-sm bg-dark text-white"><option value="brak">Brak</option><option value="Hala A">Hala A</option><option value="Magazyn">Magazyn</option><option value="Biuro">Biuro</option><option value="Hala B">Hala B</option><option value="Serwerownia">Serwerownia</option></select>
-                        </div>
-                        <div class="col-3">
-                            <label class="form-label-sm">Powódź</label>
-                            <select name="powodz" class="form-select form-select-sm bg-dark text-white"><option value="brak">Brak</option><option value="Hala A">Hala A</option><option value="Magazyn">Magazyn</option><option value="Biuro">Biuro</option><option value="Hala B">Hala B</option><option value="Serwerownia">Serwerownia</option></select>
-                        </div>
-                        <div class="col-3">
-                            <label class="form-label-sm">Wiatrak</label>
-                            <select name="wiatrak" class="form-select form-select-sm bg-dark text-white"><option value="wyłączony">OFF</option><option value="słabo">Słabo</option><option value="średnio">Średnio</option><option value="szybko">Szybko</option></select>
-                        </div>
+                        <div class="col-3"><label class="form-label-sm d-block">Terrorysta</label><input class="form-check-input" type="checkbox" name="terrorysta"></div>
+                        <div class="col-3"><label class="form-label-sm">Pożar</label><select name="pozar" class="form-select form-select-sm bg-dark text-white"><option value="brak">Brak</option><option value="Hala A">Hala A</option><option value="Magazyn">Magazyn</option><option value="Biuro">Biuro</option><option value="Hala B">Hala B</option><option value="Serwerownia">Serwerownia</option></select></div>
+                        <div class="col-3"><label class="form-label-sm">Powódź</label><select name="powodz" class="form-select form-select-sm bg-dark text-white"><option value="brak">Brak</option><option value="Hala A">Hala A</option><option value="Magazyn">Magazyn</option><option value="Biuro">Biuro</option><option value="Hala B">Hala B</option><option value="Serwerownia">Serwerownia</option></select></div>
+                        <div class="col-3"><label class="form-label-sm">Wiatrak</label><select name="wiatrak" class="form-select form-select-sm bg-dark text-white"><option value="wyłączony">OFF</option><option value="słabo">Słabo</option><option value="średnio">Średnio</option><option value="szybko">Szybko</option></select></div>
                     </div>
                 </form>
                 <div id="form-msg-container" class="text-center"><div id="form-msg" class="small fw-bold" style="display:none"></div></div>
@@ -95,32 +71,31 @@ if(!isset($_SESSION['lab12a_user_id'])) {
 
             <div class="scada-viz mb-1">
                 <svg id="scada-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Ściany zewnętrzne -->
                     <rect x="50" y="50" width="700" height="300" fill="none" stroke="#888" stroke-width="3" />
                     <line x1="250" y1="50" x2="250" y2="350" stroke="#888" stroke-width="2" />
                     <line x1="500" y1="50" x2="500" y2="350" stroke="#888" stroke-width="2" />
                     <line x1="250" y1="200" x2="500" y2="200" stroke="#888" stroke-width="2" />
                     <line x1="500" y1="200" x2="750" y2="200" stroke="#888" stroke-width="2" />
                     
-                    <!-- Drzwi Wejściowe -->
+                    <!-- Drzwi Wejściowe (Magazyn) -->
                     <path d="M 330 50 A 30 30 0 0 0 300 20" fill="none" stroke="#4dabff" stroke-width="2" />
                     <line x1="300" y1="50" x2="330" y2="50" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="50" x2="300" y2="20" stroke="#4dabff" stroke-width="2" />
                     
-                    <!-- Drzwi Hala A -> Magazyn -->
+                    <!-- Drzwi Hala A <-> Magazyn -->
                     <path d="M 250 120 A 30 30 0 0 0 220 150" fill="none" stroke="#4dabff" stroke-width="2" />
                     <line x1="250" y1="150" x2="250" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="250" y1="150" x2="220" y2="150" stroke="#4dabff" stroke-width="2" />
                     
-                    <!-- Drzwi Magazyn -> Hala B -->
+                    <!-- Drzwi Magazyn <-> Hala B -->
                     <path d="M 500 120 A 30 30 0 0 1 530 150" fill="none" stroke="#4dabff" stroke-width="2" />
                     <line x1="500" y1="150" x2="500" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="150" x2="530" y2="150" stroke="#4dabff" stroke-width="2" />
 
-                    <!-- Drzwi Magazyn -> Biuro -->
-                    <path d="M 380 200 A 30 30 0 0 1 350 230" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="350" y1="200" x2="380" y2="200" stroke="#4dabff" stroke-width="2" /><line x1="350" y1="200" x2="350" y2="230" stroke="#4dabff" stroke-width="2" />
+                    <!-- Drzwi Magazyn <-> Biuro (Przesunięte w lewo) -->
+                    <path d="M 330 200 A 30 30 0 0 1 300 230" fill="none" stroke="#4dabff" stroke-width="2" />
+                    <line x1="300" y1="200" x2="330" y2="200" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="200" x2="300" y2="230" stroke="#4dabff" stroke-width="2" />
 
-                    <!-- Drzwi Biuro -> Serwerownia -->
-                    <path d="M 500 280 A 30 30 0 0 0 530 250" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="500" y1="250" x2="500" y2="280" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="250" x2="530" y2="250" stroke="#4dabff" stroke-width="2" />
+                    <!-- Drzwi Biuro <-> Serwerownia (Przesunięte do góry) -->
+                    <path d="M 500 240 A 30 30 0 0 0 530 210" fill="none" stroke="#4dabff" stroke-width="2" />
+                    <line x1="500" y1="210" x2="500" y2="240" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="210" x2="530" y2="210" stroke="#4dabff" stroke-width="2" />
                     
                     <text x="150" y="80" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Hala Produkcyjna A</text>
                     <text x="375" y="80" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Magazyn</text>
@@ -128,13 +103,11 @@ if(!isset($_SESSION['lab12a_user_id'])) {
                     <text x="625" y="80" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Hala Produkcyjna B</text>
                     <text x="625" y="230" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Serwerownia</text>
                 </svg>
-                
                 <div id="s-x1" class="sensor-tag">x1: --</div><div id="s-x2" class="sensor-tag">x2: --</div><div id="s-x3" class="sensor-tag">x3: --</div><div id="s-x4" class="sensor-tag">x4: --</div><div id="s-x5" class="sensor-tag">x5: --</div>
                 <div id="icon-terror" class="alarm-icon">💣</div><div id="icon-fire" class="alarm-icon">🔥</div><div id="icon-flood" class="alarm-icon">🌊</div>
                 <div id="fan-container"><svg class="fan-svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="5" fill="#FFF"/><path d="M50 50 L50 10 A15 15 0 0 1 65 25 Z M50 50 L90 50 A15 15 0 0 1 75 65 Z M50 50 L50 90 A15 15 0 0 1 35 75 Z M50 50 L10 50 A15 15 0 0 1 25 35 Z" /></svg></div>
             </div>
         </div>
-
         <div class="col-lg-7">
             <div class="card"><div style="height: 230px;"><canvas id="chart-live"></canvas></div></div>
             <div class="card"><div class="table-scroll"><table class="table table-dark table-sm table-hover mb-0" style="font-size: 0.85rem;"><thead class="sticky-top bg-black"><tr><th>Czas</th><th>x1</th><th>x2</th><th>x3</th><th>x4</th><th>x5</th><th>Status</th></tr></thead><tbody id="table-body"></tbody></table></div></div>
@@ -146,9 +119,9 @@ if(!isset($_SESSION['lab12a_user_id'])) {
 const roomPos = {
     'Hala A': {left: '18.7%', top: '50%'},
     'Magazyn': {left: '46.8%', top: '31.2%'},
-    'Biuro': {left: '46.8%', top: '68.7%'},
+    'Biuro': {left: '46.8%', top: 'calc(68.7% - 4px)'},
     'Hala B': {left: '78.1%', top: '31.2%'},
-    'Serwerownia': {left: '78.1%', top: '68.7%'}
+    'Serwerownia': {left: '78.1%', top: 'calc(68.7% - 4px)'}
 };
 
 Chart.defaults.color = '#ccc';
@@ -183,20 +156,24 @@ function refreshData() {
         
         const tIcon = document.getElementById('icon-terror');
         tIcon.style.display = latest.terrorysta == 1 ? 'block' : 'none';
-        tIcon.style.left = '78.1%'; tIcon.style.top = '82%';
+        tIcon.style.left = '78.1%'; tIcon.style.top = '75%';
 
         const fIcon = document.getElementById('icon-fire');
         if(latest.pozar !== 'brak') {
-            fIcon.style.display = 'block'; fIcon.style.left = roomPos[latest.pozar].left; fIcon.style.top = '42%';
+            fIcon.style.display = 'block'; 
+            fIcon.style.left = (parseFloat(roomPos[latest.pozar].left)-10)+'%'; // Większy offset (10%)
+            fIcon.style.top = roomPos[latest.pozar].top;
         } else fIcon.style.display = 'none';
 
         const wIcon = document.getElementById('icon-flood');
         if(latest.powodz !== 'brak') {
-            wIcon.style.display = 'block'; wIcon.style.left = roomPos[latest.powodz].left; wIcon.style.top = '58%';
+            wIcon.style.display = 'block'; 
+            wIcon.style.left = (parseFloat(roomPos[latest.powodz].left)+10)+'%'; // Większy offset (10%)
+            wIcon.style.top = roomPos[latest.powodz].top;
         } else wIcon.style.display = 'none';
 
         const fc = document.getElementById('fan-container');
-        fc.style.left = roomPos['Biuro'].left; fc.style.top = '82%';
+        fc.style.left = '46.8%'; fc.style.top = '75%';
         document.querySelector('.fan-svg').className.baseVal = 'fan-svg ' + (latest.wiatrak === 'szybko' ? 'spin-fast' : latest.wiatrak === 'średnio' ? 'spin-medium' : latest.wiatrak === 'słabo' ? 'spin-slow' : '');
 
         liveChart.data.labels = data.map(d => d.datetime.split(' ')[1]);
