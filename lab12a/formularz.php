@@ -16,15 +16,26 @@ if(!isset($_SESSION['lab12a_user_id'])) {
     <link rel="stylesheet" href="../style.css">
     <style>
         .container { margin-top: 50px; max-width: 600px; }
-        .card { padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card { padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .nav-back { margin-bottom: 20px; }
+        .form-control {
+            background-color: #2c2c2c;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .form-control:focus {
+            background-color: #333;
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: none;
+        }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container">
     <div class="nav-back">
-        <a href="../index.php" class="btn btn-secondary">← Powrót do menu</a>
+        <a href="index.php" class="btn btn-secondary w-auto">← Powrót</a>
     </div>
 
     <div class="card">
@@ -59,7 +70,7 @@ if(!isset($_SESSION['lab12a_user_id'])) {
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Zapisz Pomiar</button>
                 <a href="tabela.php" class="btn btn-outline-info">Zobacz Tabelę Wyników</a>
-                <a href="scada.php" class="btn btn-outline-dark">Wizualizacja SCADA</a>
+                <a href="scada.php" class="btn btn-outline-light">Wizualizacja SCADA</a>
             </div>
         </form>
     </div>

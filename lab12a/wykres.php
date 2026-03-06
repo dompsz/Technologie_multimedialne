@@ -39,14 +39,17 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        .card { box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container mt-5">
     <div class="nav-back mb-3">
-        <a href="formularz.php" class="btn btn-secondary">← Powrót do formularza</a>
-        <a href="tabela.php" class="btn btn-info">Zobacz Tabelę</a>
-        <a href="scada.php" class="btn btn-dark">Wizualizacja SCADA</a>
+        <a href="index.php" class="btn btn-secondary w-auto">← Powrót</a>
+        <a href="tabela.php" class="btn btn-info w-auto">Zobacz Tabelę</a>
+        <a href="scada.php" class="btn btn-dark w-auto">Wizualizacja SCADA</a>
     </div>
 
     <div class="card p-4 shadow">
@@ -58,6 +61,9 @@ try {
 </div>
 
 <script>
+Chart.defaults.color = '#b0b0b0';
+Chart.defaults.borderColor = '#333';
+
 const ctx = document.getElementById('myChart').getContext('2d');
 const myChart = new Chart(ctx, {
     type: 'line',
@@ -77,10 +83,17 @@ const myChart = new Chart(ctx, {
         scales: {
             y: {
                 beginAtZero: true,
-                title: { display: true, text: 'Napięcie [V]' }
+                grid: { color: '#333' },
+                title: { display: true, text: 'Napięcie [V]', color: '#e0e0e0' }
             },
             x: {
-                title: { display: true, text: 'Czas' }
+                grid: { color: '#333' },
+                title: { display: true, text: 'Czas', color: '#e0e0e0' }
+            }
+        },
+        plugins: {
+            legend: {
+                labels: { color: '#e0e0e0' }
             }
         }
     }

@@ -8,7 +8,7 @@ session_start();
     <title>Laboratorium 2 - Multimedia</title>
     <link rel="stylesheet" href="../style.css">
     <style>
-        .hero { text-align: center; padding: 50px 20px; background: #fff; border-radius: 8px; margin-top: 20px; }
+        .hero { text-align: center; padding: 50px 20px; border-radius: 8px; margin-top: 20px; }
         .actions { margin-top: 30px; display: flex; justify-content: center; gap: 15px; }
     </style>
 </head>

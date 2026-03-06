@@ -11,24 +11,20 @@ session_start();
         .hero {
             text-align: center;
             padding: 50px 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             margin-top: 20px;
+            border-radius: 8px;
         }
-        .hero h1 { color: #333; }
-        .hero p { color: #666; font-size: 1.1rem; }
         .actions { margin-top: 30px; display: flex; justify-content: center; gap: 15px; }
         .btn-outline {
             padding: 10px 25px;
-            border: 2px solid #007bff;
+            border: 2px solid var(--accent-color);
             border-radius: 4px;
-            color: #007bff;
+            color: var(--accent-color);
             text-decoration: none;
             transition: all 0.3s;
         }
         .btn-outline:hover {
-            background: #007bff;
+            background: var(--accent-color);
             color: #fff;
         }
     </style>

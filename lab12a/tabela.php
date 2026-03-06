@@ -24,23 +24,32 @@ try {
     <link rel="stylesheet" href="../style.css">
     <style>
         .container { margin-top: 50px; }
-        .table-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .table-container { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+        .table { color: var(--text-primary); }
+        .table-striped>tbody>tr:nth-of-type(odd)>* {
+            --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .table-hover>tbody>tr:hover>* {
+            --bs-table-accent-bg: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container">
     <div class="nav-back mb-3">
-        <a href="formularz.php" class="btn btn-secondary">← Powrót do formularza</a>
-        <a href="wykres.php" class="btn btn-primary">Pokaż Wykresy</a>
-        <a href="scada.php" class="btn btn-dark">Wizualizacja SCADA</a>
+        <a href="index.php" class="btn btn-secondary w-auto">← Powrót</a>
+        <a href="wykres.php" class="btn btn-primary w-auto">Pokaż Wykresy</a>
+        <a href="scada.php" class="btn btn-dark w-auto">Wizualizacja SCADA</a>
     </div>
 
     <div class="table-container">
         <h2 class="mb-4">Historia Pomiarów</h2>
         
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
+            <table class="table table-hover">
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>

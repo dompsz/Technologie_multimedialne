@@ -18,15 +18,16 @@ if(!isset($_SESSION['lab12a_user_id'])) {
             position: relative;
             max-width: 800px;
             margin: 20px auto;
-            background: #fff;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
         }
         .sensor-tag {
             position: absolute;
-            background: rgba(0, 0, 0, 0.7);
-            color: #0f0;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ff00;
             padding: 2px 8px;
             border-radius: 4px;
             font-family: 'Courier New', Courier, monospace;
@@ -34,47 +35,52 @@ if(!isset($_SESSION['lab12a_user_id'])) {
             font-size: 14px;
             pointer-events: none;
             transition: all 0.5s ease;
+            border: 1px solid #00ff0033;
         }
         #scada-svg {
             width: 100%;
             height: auto;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
+            border: 1px solid var(--border-color);
+            background: #000;
         }
         .status-panel {
             margin-top: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
         }
+        #last-update { color: var(--accent-color); }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div class="container text-center">
     <h1 class="mt-4 mb-4">System Wizualizacji SCADA - Lab 12a</h1>
     
     <div class="mb-3">
-        <a href="formularz.php" class="btn btn-secondary">Dodaj Pomiary</a>
-        <a href="tabela.php" class="btn btn-info">Historia Pomiarów</a>
-        <a href="wykres.php" class="btn btn-primary">Wykresy</a>
+        <a href="index.php" class="btn btn-secondary w-auto">← Powrót</a>
+        <a href="formularz.php" class="btn btn-info w-auto">Dodaj Pomiary</a>
+        <a href="tabela.php" class="btn btn-primary w-auto">Historia</a>
+        <a href="wykres.php" class="btn btn-outline-light w-auto">Wykresy</a>
     </div>
 
     <div class="scada-container">
         <!-- SVG Plan Piętra / Schemat Techniczny -->
         <svg id="scada-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
             <!-- Ściany zewnętrzne -->
-            <rect x="50" y="50" width="700" height="300" fill="none" stroke="#333" stroke-width="3" />
+            <rect x="50" y="50" width="700" height="300" fill="none" stroke="#444" stroke-width="3" />
             <!-- Pokoje -->
-            <line x1="300" y1="50" x2="300" y2="350" stroke="#333" stroke-width="2" />
-            <line x1="550" y1="50" x2="550" y2="350" stroke="#333" stroke-width="2" />
-            <line x1="300" y1="200" x2="550" y2="200" stroke="#333" stroke-width="2" />
+            <line x1="300" y1="50" x2="300" y2="350" stroke="#444" stroke-width="2" />
+            <line x1="550" y1="50" x2="550" y2="350" stroke="#444" stroke-width="2" />
+            <line x1="300" y1="200" x2="550" y2="200" stroke="#444" stroke-width="2" />
             
             <!-- Etykiety Pomieszczeń -->
-            <text x="175" y="80" text-anchor="middle" fill="#999">Hala Produkcyjna A</text>
-            <text x="425" y="80" text-anchor="middle" fill="#999">Magazyn</text>
-            <text x="425" y="230" text-anchor="middle" fill="#999">Biuro</text>
-            <text x="675" y="80" text-anchor="middle" fill="#999">Hala B</text>
+            <text x="175" y="80" text-anchor="middle" fill="#666" font-size="14">Hala Produkcyjna A</text>
+            <text x="425" y="80" text-anchor="middle" fill="#666" font-size="14">Magazyn</text>
+            <text x="425" y="230" text-anchor="middle" fill="#666" font-size="14">Biuro</text>
+            <text x="675" y="80" text-anchor="middle" fill="#666" font-size="14">Hala B</text>
         </svg>
 
-        <!-- Dynamiczne Tagi Sensorów (pozycjonowane absolutnie nad SVG) -->
+        <!-- Dynamiczne Tagi Sensorów -->
         <div id="sensor-x1" class="sensor-tag" style="top: 150px; left: 150px;">x1: -- V</div>
         <div id="sensor-x2" class="sensor-tag" style="top: 150px; left: 400px;">x2: -- V</div>
         <div id="sensor-x3" class="sensor-tag" style="top: 280px; left: 400px;">x3: -- V</div>
@@ -83,7 +89,7 @@ if(!isset($_SESSION['lab12a_user_id'])) {
     </div>
 
     <div class="status-panel card p-3 mx-auto" style="max-width: 400px;">
-        <h6>Ostatnia aktualizacja: <span id="last-update">--:--:--</span></h6>
+        <h6 class="mb-2">Ostatnia aktualizacja: <span id="last-update">--:--:--</span></h6>
         <div id="status-indicator" class="badge bg-success">Połączono (Live)</div>
     </div>
 </div>
@@ -100,7 +106,6 @@ function updateSCADA() {
                 return;
             }
             
-            // Aktualizacja wartości
             document.getElementById('sensor-x1').innerText = 'x1: ' + parseFloat(data.x1).toFixed(2) + ' V';
             document.getElementById('sensor-x2').innerText = 'x2: ' + parseFloat(data.x2).toFixed(2) + ' V';
             document.getElementById('sensor-x3').innerText = 'x3: ' + parseFloat(data.x3).toFixed(2) + ' V';
@@ -111,7 +116,6 @@ function updateSCADA() {
             document.getElementById('status-indicator').className = 'badge bg-success';
             document.getElementById('status-indicator').innerText = 'Połączono (Live)';
 
-            // Prosta animacja "mrugania" przy zmianie danych
             const tags = document.querySelectorAll('.sensor-tag');
             tags.forEach(tag => {
                 tag.style.boxShadow = '0 0 10px #0f0';
@@ -125,9 +129,8 @@ function updateSCADA() {
         });
 }
 
-// Odświeżanie co 3 sekundy
 setInterval(updateSCADA, 3000);
-updateSCADA(); // Pierwsze wywołanie od razu
+updateSCADA();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
