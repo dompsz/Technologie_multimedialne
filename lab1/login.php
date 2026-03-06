@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
+        if ($user && !empty($user['password']) && password_verify($password, $user['password'])) {
             $_SESSION['lab1_user_id'] = $user['id'];
             $_SESSION['lab1_username'] = $user['username'];
             header("Location: dashboard.php");

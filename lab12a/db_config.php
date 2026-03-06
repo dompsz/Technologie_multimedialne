@@ -2,12 +2,12 @@
 // Konfiguracja Bazy Danych - Laboratorium 12a
 require_once __DIR__ . '/../load_env.php';
 
-// Wczytuje .env z głównego folderu lub z lab12a
-loadEnv(__DIR__ . '/../lab1/.env'); // Użycie wspólnego .env z lab1
+// Wczytuje .env z tego samego folderu co db_config.php
+loadEnv(__DIR__ . '/.env');
 
 $host = $_ENV['DB_HOST'] ?? 'localhost';
-$db_name = 'pszczolk_z12a';
-$db_user = 'pszczolk_z12a';
+$db_name = 'pszczolk_z12a'; 
+$db_user = 'pszczolk_z12a';   
 $db_pass = $_ENV['DB_PASS'] ?? '';
 
 try {

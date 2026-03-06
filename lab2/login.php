@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
-        if ($user && password_verify($password, $user['password'])) {
+        if ($user && !empty($user['password']) && password_verify($password, $user['password'])) {
             $_SESSION['lab2_user_id'] = $user['id'];
             $_SESSION['lab2_username'] = $user['username'];
             header("Location: dashboard.php");
