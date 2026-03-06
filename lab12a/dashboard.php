@@ -31,18 +31,31 @@ if(!isset($_SESSION['lab12a_user_id'])) {
         .form-label-sm { font-size: 0.8rem; font-weight: bold; color: #fff; margin-bottom: 4px; }
         .form-check-input { width: 2.5em; height: 1.25em; border: 2px solid #666; background-color: #222; }
         .form-check-input:checked { background-color: #ff0000; border-color: #ff4444; }
-        .btn-save { margin-top: 24px; background-color: var(--accent-color) !important; color: #000 !important; font-weight: bold; border: none; }
+        
+        /* Przycisk zapisu dopasowany do wysokości inputów sm */
+        .btn-save { 
+            height: calc(1.5em + 0.5rem + 2px); 
+            background-color: var(--accent-color) !important; 
+            color: #000 !important; 
+            font-weight: bold; 
+            border: none;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .btn-save:hover { background-color: var(--accent-hover) !important; }
-        .nav-logout { margin-bottom: 4px; }
     </style>
 </head>
 <body class="bg-dark text-light">
 
-<nav class="navbar navbar-dark bg-black mb-1 py-1 px-4 border-bottom border-secondary">
-    <a class="navbar-brand fw-bold" href="../index.php">Lab 12a</a>
-    <div class="nav-logout">
-        <span class="text-secondary me-3 small">Operator: <?php echo htmlspecialchars($_SESSION['lab12a_username']); ?></span>
-        <a href="logout.php" class="btn btn-outline-danger btn-sm py-0">Wyloguj</a>
+<nav class="bg-black mb-1 px-4 border-bottom border-secondary d-flex align-items-center justify-content-between" style="padding: 8px 24px;">
+    <div class="d-flex align-items-center">
+        <a href="../index.php" class="btn btn-outline-secondary py-1 px-3" style="font-size: 0.9rem; line-height: 1; margin: 0; white-space: nowrap;">← POWRÓT</a>
+        <span class="fw-bold text-white ms-3" style="font-size: 0.9rem; line-height: 1; margin: 0; white-space: nowrap; display: inline-block;">Lab 12a</span>
+    </div>
+    <div class="d-flex align-items-center">
+        <a href="logout.php" class="btn btn-outline-danger py-1 px-3" style="font-size: 0.9rem; line-height: 1; margin: 0; white-space: nowrap;">Wyloguj</a>
     </div>
 </nav>
 
@@ -76,27 +89,11 @@ if(!isset($_SESSION['lab12a_user_id'])) {
                     <line x1="500" y1="50" x2="500" y2="350" stroke="#888" stroke-width="2" />
                     <line x1="250" y1="200" x2="500" y2="200" stroke="#888" stroke-width="2" />
                     <line x1="500" y1="200" x2="750" y2="200" stroke="#888" stroke-width="2" />
-                    
-                    <!-- Drzwi Wejściowe (Magazyn) -->
-                    <path d="M 330 50 A 30 30 0 0 0 300 20" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="300" y1="50" x2="330" y2="50" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="50" x2="300" y2="20" stroke="#4dabff" stroke-width="2" />
-                    
-                    <!-- Drzwi Hala A <-> Magazyn -->
-                    <path d="M 250 120 A 30 30 0 0 0 220 150" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="250" y1="150" x2="250" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="250" y1="150" x2="220" y2="150" stroke="#4dabff" stroke-width="2" />
-                    
-                    <!-- Drzwi Magazyn <-> Hala B -->
-                    <path d="M 500 120 A 30 30 0 0 1 530 150" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="500" y1="150" x2="500" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="150" x2="530" y2="150" stroke="#4dabff" stroke-width="2" />
-
-                    <!-- Drzwi Magazyn <-> Biuro (Przesunięte w lewo) -->
-                    <path d="M 330 200 A 30 30 0 0 1 300 230" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="300" y1="200" x2="330" y2="200" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="200" x2="300" y2="230" stroke="#4dabff" stroke-width="2" />
-
-                    <!-- Drzwi Biuro <-> Serwerownia (Przesunięte do góry) -->
-                    <path d="M 500 240 A 30 30 0 0 0 530 210" fill="none" stroke="#4dabff" stroke-width="2" />
-                    <line x1="500" y1="210" x2="500" y2="240" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="210" x2="530" y2="210" stroke="#4dabff" stroke-width="2" />
-                    
+                    <path d="M 330 50 A 30 30 0 0 0 300 20" fill="none" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="50" x2="330" y2="50" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="50" x2="300" y2="20" stroke="#4dabff" stroke-width="2" />
+                    <path d="M 250 120 A 30 30 0 0 0 220 150" fill="none" stroke="#4dabff" stroke-width="2" /><line x1="250" y1="150" x2="250" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="250" y1="150" x2="220" y2="150" stroke="#4dabff" stroke-width="2" />
+                    <path d="M 500 120 A 30 30 0 0 1 530 150" fill="none" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="150" x2="500" y2="120" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="150" x2="530" y2="150" stroke="#4dabff" stroke-width="2" />
+                    <path d="M 330 200 A 30 30 0 0 1 300 230" fill="none" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="200" x2="330" y2="200" stroke="#4dabff" stroke-width="2" /><line x1="300" y1="200" x2="300" y2="230" stroke="#4dabff" stroke-width="2" />
+                    <path d="M 500 240 A 30 30 0 0 0 530 210" fill="none" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="210" x2="500" y2="240" stroke="#4dabff" stroke-width="2" /><line x1="500" y1="210" x2="530" y2="210" stroke="#4dabff" stroke-width="2" />
                     <text x="150" y="80" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Hala Produkcyjna A</text>
                     <text x="375" y="80" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Magazyn</text>
                     <text x="375" y="230" text-anchor="middle" fill="#FFF" font-size="12" font-weight="bold">Biuro</text>
@@ -146,40 +143,33 @@ function refreshData() {
     fetch('get_history.php').then(res => res.json()).then(data => {
         if (!data.length) return;
         const latest = data[data.length - 1];
-        
         ['x1','x2','x3','x4','x5'].forEach((x, i) => {
             const el = document.getElementById('s-'+x);
             el.innerText = x+': '+parseFloat(latest[x]).toFixed(2);
             const pos = roomPos[Object.keys(roomPos)[i]];
             el.style.left = pos.left; el.style.top = pos.top;
         });
-        
         const tIcon = document.getElementById('icon-terror');
         tIcon.style.display = latest.terrorysta == 1 ? 'block' : 'none';
         tIcon.style.left = '78.1%'; tIcon.style.top = '75%';
-
         const fIcon = document.getElementById('icon-fire');
         if(latest.pozar !== 'brak') {
             fIcon.style.display = 'block'; 
-            fIcon.style.left = (parseFloat(roomPos[latest.pozar].left)-10)+'%'; // Większy offset (10%)
+            fIcon.style.left = (parseFloat(roomPos[latest.pozar].left)-10)+'%'; 
             fIcon.style.top = roomPos[latest.pozar].top;
         } else fIcon.style.display = 'none';
-
         const wIcon = document.getElementById('icon-flood');
         if(latest.powodz !== 'brak') {
             wIcon.style.display = 'block'; 
-            wIcon.style.left = (parseFloat(roomPos[latest.powodz].left)+10)+'%'; // Większy offset (10%)
+            wIcon.style.left = (parseFloat(roomPos[latest.powodz].left)+10)+'%'; 
             wIcon.style.top = roomPos[latest.powodz].top;
         } else wIcon.style.display = 'none';
-
         const fc = document.getElementById('fan-container');
         fc.style.left = '46.8%'; fc.style.top = '75%';
         document.querySelector('.fan-svg').className.baseVal = 'fan-svg ' + (latest.wiatrak === 'szybko' ? 'spin-fast' : latest.wiatrak === 'średnio' ? 'spin-medium' : latest.wiatrak === 'słabo' ? 'spin-slow' : '');
-
         liveChart.data.labels = data.map(d => d.datetime.split(' ')[1]);
         ['x1','x2','x3','x4','x5'].forEach((x, i) => liveChart.data.datasets[i].data = data.map(d => d[x]));
         liveChart.update('none');
-
         document.getElementById('table-body').innerHTML = data.slice().reverse().map(d => `
             <tr><td class="text-primary fw-bold">${d.datetime.split(' ')[1]}</td><td>${parseFloat(d.x1).toFixed(2)}</td><td>${parseFloat(d.x2).toFixed(2)}</td><td>${parseFloat(d.x3).toFixed(2)}</td><td>${parseFloat(d.x4).toFixed(2)}</td><td>${parseFloat(d.x5).toFixed(2)}</td><td>${d.terrorysta==1?'💣':''}${d.pozar!='brak'?'🔥':''}${d.powodz!='brak'?'🌊':''}${d.wiatrak!='wyłączony'?'🌬️':''}</td></tr>
         `).join('');
@@ -196,7 +186,6 @@ document.getElementById('measure-form').onsubmit = function(e) {
         refreshData();
     });
 };
-
 setInterval(refreshData, 3000);
 refreshData();
 </script>
