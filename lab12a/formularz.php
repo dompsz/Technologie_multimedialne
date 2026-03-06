@@ -47,23 +47,23 @@ if(!isset($_SESSION['lab12a_user_id'])) {
 
         <form action="add.php" method="POST">
             <div class="mb-3">
-                <label for="x1" class="form-label">Czujnik x1 [V]:</label>
+                <label for="x1" class="form-label">Czujnik x1:</label>
                 <input type="number" step="0.01" class="form-control" id="x1" name="x1" required>
             </div>
             <div class="mb-3">
-                <label for="x2" class="form-label">Czujnik x2 [V]:</label>
+                <label for="x2" class="form-label">Czujnik x2:</label>
                 <input type="number" step="0.01" class="form-control" id="x2" name="x2" required>
             </div>
             <div class="mb-3">
-                <label for="x3" class="form-label">Czujnik x3 [V]:</label>
+                <label for="x3" class="form-label">Czujnik x3:</label>
                 <input type="number" step="0.01" class="form-control" id="x3" name="x3" required>
             </div>
             <div class="mb-3">
-                <label for="x4" class="form-label">Czujnik x4 [V]:</label>
+                <label for="x4" class="form-label">Czujnik x4:</label>
                 <input type="number" step="0.01" class="form-control" id="x4" name="x4" required>
             </div>
             <div class="mb-3">
-                <label for="x5" class="form-label">Czujnik x5 [V]:</label>
+                <label for="x5" class="form-label">Czujnik x5:</label>
                 <input type="number" step="0.01" class="form-control" id="x5" name="x5" required>
             </div>
             

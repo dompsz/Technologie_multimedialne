@@ -19,3 +19,14 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `statusy` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pomiar_id` int(11) NOT NULL,
+  `terrorysta` tinyint(1) DEFAULT 0,
+  `pozar` enum('brak','Hala A','Magazyn','Biuro','Hala B','Serwerownia') DEFAULT 'brak',
+  `powodz` enum('brak','Hala A','Magazyn','Biuro','Hala B','Serwerownia') DEFAULT 'brak',
+  `wiatrak` enum('szybko','średnio','słabo','wyłączony') DEFAULT 'wyłączony',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+

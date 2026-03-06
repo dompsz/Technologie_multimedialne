@@ -53,11 +53,11 @@ try {
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
-                        <th>x1 [V]</th>
-                        <th>x2 [V]</th>
-                        <th>x3 [V]</th>
-                        <th>x4 [V]</th>
-                        <th>x5 [V]</th>
+                        <th>x1</th>
+                        <th>x2</th>
+                        <th>x3</th>
+                        <th>x4</th>
+                        <th>x5</th>
                         <th>Data i Godzina</th>
                     </tr>
                 </thead>

@@ -1,5 +1,4 @@
 <?php
-// add.php - Obsługa zapisu pomiarów do bazy danych
 require_once 'db_config.php';
 session_start();
 if(!isset($_SESSION['lab12a_user_id'])) {
@@ -8,30 +7,32 @@ if(!isset($_SESSION['lab12a_user_id'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Walidacja danych wejściowych
     $x1 = filter_input(INPUT_POST, 'x1', FILTER_VALIDATE_FLOAT);
     $x2 = filter_input(INPUT_POST, 'x2', FILTER_VALIDATE_FLOAT);
     $x3 = filter_input(INPUT_POST, 'x3', FILTER_VALIDATE_FLOAT);
     $x4 = filter_input(INPUT_POST, 'x4', FILTER_VALIDATE_FLOAT);
     $x5 = filter_input(INPUT_POST, 'x5', FILTER_VALIDATE_FLOAT);
-
-    // Sprawdzenie czy wszystkie dane są poprawne
-    if ($x1 === false || $x2 === false || $x3 === false || $x4 === false || $x5 === false) {
-        die("Błąd: Nieprawidłowe dane wejściowe. Proszę podać liczby.");
-    }
+    
+    $terrorysta = isset($_POST['terrorysta']) ? 1 : 0;
+    $pozar = $_POST['pozar'] ?? 'brak';
+    $powodz = $_POST['powodz'] ?? 'brak';
+    $wiatrak = $_POST['wiatrak'] ?? 'wyłączony';
 
     try {
+        $conn->beginTransaction();
+        
         $stmt = $conn->prepare("INSERT INTO pomiary (x1, x2, x3, x4, x5) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$x1, $x2, $x3, $x4, $x5]);
+        $pomiar_id = $conn->lastInsertId();
         
-        // Przekierowanie z powrotem do formularza z komunikatem o sukcesie
-        header("Location: formularz.php?success=1");
-        exit;
+        $stmt2 = $conn->prepare("INSERT INTO statusy (pomiar_id, terrorysta, pozar, powodz, wiatrak) VALUES (?, ?, ?, ?, ?)");
+        $stmt2->execute([$pomiar_id, $terrorysta, $pozar, $powodz, $wiatrak]);
+        
+        $conn->commit();
+        echo "success";
     } catch(PDOException $e) {
-        die("Błąd zapisu danych: " . $e->getMessage());
+        $conn->rollBack();
+        die("Błąd zapisu: " . $e->getMessage());
     }
-} else {
-    header("Location: formularz.php");
-    exit;
 }
 ?>

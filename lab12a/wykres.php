@@ -70,11 +70,11 @@ const myChart = new Chart(ctx, {
     data: {
         labels: <?php echo json_encode($labels); ?>,
         datasets: [
-            { label: 'x1 [V]', data: <?php echo json_encode($x1_vals); ?>, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1 },
-            { label: 'x2 [V]', data: <?php echo json_encode($x2_vals); ?>, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 },
-            { label: 'x3 [V]', data: <?php echo json_encode($x3_vals); ?>, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 },
-            { label: 'x4 [V]', data: <?php echo json_encode($x4_vals); ?>, borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 },
-            { label: 'x5 [V]', data: <?php echo json_encode($x5_vals); ?>, borderColor: 'rgba(255, 159, 64, 1)', tension: 0.1 }
+            { label: 'x1', data: <?php echo json_encode($x1_vals); ?>, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1 },
+            { label: 'x2', data: <?php echo json_encode($x2_vals); ?>, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 },
+            { label: 'x3', data: <?php echo json_encode($x3_vals); ?>, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 },
+            { label: 'x4', data: <?php echo json_encode($x4_vals); ?>, borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 },
+            { label: 'x5', data: <?php echo json_encode($x5_vals); ?>, borderColor: 'rgba(255, 159, 64, 1)', tension: 0.1 }
         ]
     },
     options: {
@@ -84,7 +84,7 @@ const myChart = new Chart(ctx, {
             y: {
                 beginAtZero: true,
                 grid: { color: '#333' },
-                title: { display: true, text: 'Napięcie [V]', color: '#e0e0e0' }
+                title: { display: true, text: 'Pomiary', color: '#e0e0e0' }
             },
             x: {
                 grid: { color: '#333' },

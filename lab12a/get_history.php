@@ -8,9 +8,12 @@ if(!isset($_SESSION['lab12a_user_id'])) {
 header('Content-Type: application/json');
 
 try {
-    $stmt = $conn->query("SELECT * FROM pomiary ORDER BY datetime DESC LIMIT 20");
+    $stmt = $conn->query("SELECT p.*, s.terrorysta, s.pozar, s.powodz, s.wiatrak 
+                          FROM pomiary p 
+                          LEFT JOIN statusy s ON p.id = s.pomiar_id 
+                          ORDER BY p.datetime DESC LIMIT 20");
     $data = $stmt->fetchAll();
-    echo json_encode(array_reverse($data)); // Odwracamy dla wykresu (chronologicznie)
+    echo json_encode(array_reverse($data));
 } catch(PDOException $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }
