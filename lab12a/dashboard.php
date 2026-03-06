@@ -133,6 +133,10 @@ const liveChart = new Chart(document.getElementById('chart-live').getContext('2d
     },
     options: {
         responsive: true, maintainAspectRatio: false,
+        animation: {
+            duration: 500,
+            easing: 'easeInOutQuad'
+        },
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { labels: { usePointStyle: true, boxWidth: 10 } }, tooltip: { yAlign: 'bottom', usePointStyle: true } },
         scales: { y: { grid: { color: '#222' } }, x: { grid: { display: false } } }
@@ -169,9 +173,9 @@ function refreshData() {
         document.querySelector('.fan-svg').className.baseVal = 'fan-svg ' + (latest.wiatrak === 'szybko' ? 'spin-fast' : latest.wiatrak === 'średnio' ? 'spin-medium' : latest.wiatrak === 'słabo' ? 'spin-slow' : '');
         liveChart.data.labels = data.map(d => d.datetime.split(' ')[1]);
         ['x1','x2','x3','x4','x5'].forEach((x, i) => liveChart.data.datasets[i].data = data.map(d => d[x]));
-        liveChart.update('none');
+        liveChart.update();
         document.getElementById('table-body').innerHTML = data.slice().reverse().map(d => `
-            <tr><td class="text-primary fw-bold">${d.datetime.split(' ')[1]}</td><td>${parseFloat(d.x1).toFixed(2)}</td><td>${parseFloat(d.x2).toFixed(2)}</td><td>${parseFloat(d.x3).toFixed(2)}</td><td>${parseFloat(d.x4).toFixed(2)}</td><td>${parseFloat(d.x5).toFixed(2)}</td><td>${d.terrorysta==1?'💣':''}${d.pozar!='brak'?'🔥':''}${d.powodz!='brak'?'🌊':''}${d.wiatrak!='wyłączony'?'🌬️':''}</td></tr>
+            <tr><td class="text-primary fw-bold">${d.datetime.split(' ')[1]}</td><td>${parseFloat(d.x1).toFixed(2)}</td><td>${parseFloat(d.x2).toFixed(2)}</td><td>${parseFloat(d.x3).toFixed(2)}</td><td>${parseFloat(d.x4).toFixed(2)}</td><td>${parseFloat(d.x5).toFixed(2)}</td><td>${d.terrorysta==1?'💣':''}${d.pozar!='brak'?'🔥':''}${d.powodz!='brak'?'🌊':''}${d.wiatrak!='wyłączony'?'⚙️':''}</td></tr>
         `).join('');
     });
 }
