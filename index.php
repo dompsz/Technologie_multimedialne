@@ -81,6 +81,11 @@
                 <h2>Laboratorium 3</h2>
                 <p>Zaawansowane efekty wizualne</p>
             </a>
+            <a href="lab12a/index.php" class="tile">
+                <div class="lab-icon">📊</div>
+                <h2>Zadanie 12a</h2>
+                <p>SCADA i MySQL</p>
+            </a>
         </div>
     </div>
 </body>
