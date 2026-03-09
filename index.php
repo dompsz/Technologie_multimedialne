@@ -77,6 +77,11 @@
                 <h2>Zadanie 12a</h2>
                 <p>SCADA i MySQL</p>
             </a>
+            <a href="lab12b/index.php" class="tile">
+                <div class="lab-icon">🔌</div>
+                <h2>Zadanie 12b</h2>
+                <p>Arduino i IoT</p>
+            </a>
         </div>
     </div>
 </body>
