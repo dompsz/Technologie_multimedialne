@@ -6,6 +6,13 @@ if (!isset($_SESSION['lab13_user_id']) || $_SESSION['lab13_login'] !== 'admin') 
     die("Brak uprawnień administratora.");
 }
 
+// Funkcja do płynnego przejścia kolorów
+function getFluidProgressColor($percent) {
+    $r = floor(255 * (1 - $percent / 100));
+    $g = floor(255 * ($percent / 100));
+    return "rgb($r, $g, $b)";
+}
+
 // 1. Logi logowania
 $stmt_logs = $conn->query("SELECT * FROM logowanie ORDER BY datetime DESC LIMIT 50");
 $logs = $stmt_logs->fetchAll();
@@ -19,12 +26,6 @@ $stmt_all_tasks = $conn->query("
     ORDER BY z.idz DESC
 ");
 $all_tasks = $stmt_all_tasks->fetchAll();
-
-function getProgressColor($percent) {
-    if ($percent == 0) return '#ff4444';
-    if ($percent == 100) return '#00ff00';
-    return '#ffffff';
-}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -42,7 +43,7 @@ function getProgressColor($percent) {
 <body class="bg-dark text-light">
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-4">
-        <h2>Panel Administratora</h2>
+        <h2>Panel Administratora (Wgląd w całość)</h2>
         <a href="dashboard.php" class="btn btn-secondary">Powrót do Dashboardu</a>
     </div>
 
@@ -57,17 +58,21 @@ function getProgressColor($percent) {
                             <tr>
                                 <th>Projekt</th>
                                 <th>Manager</th>
-                                <th>Postęp</th>
+                                <th>Postęp [%]</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach($all_tasks as $t): 
                                 $avg = $t['srednia_postepu'] !== null ? round($t['srednia_postepu']) : 0;
+                                // Wyliczamy kolor ręcznie dla PHP
+                                $r = floor(255 * (1 - $avg / 100));
+                                $g = floor(255 * ($avg / 100));
+                                $color = "rgb($r, $g, 0)";
                             ?>
                                 <tr>
-                                    <td style="color: <?php echo getProgressColor($avg); ?>"><?php echo htmlspecialchars($t['nazwa_zadania']); ?></td>
+                                    <td style="color: <?php echo $color; ?>; font-weight: bold;"><?php echo htmlspecialchars($t['nazwa_zadania']); ?></td>
                                     <td><?php echo htmlspecialchars($t['manager_login']); ?></td>
-                                    <td><strong><?php echo $avg; ?>%</strong></td>
+                                    <td><span class="badge" style="background: <?php echo $color; ?>; color: #000;"><?php echo $avg; ?>%</span></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -84,7 +89,7 @@ function getProgressColor($percent) {
                     <table class="table table-dark table-sm" style="font-size: 0.85rem;">
                         <thead>
                             <tr>
-                                <th>Użytkownik</th>
+                                <th>Pracownik / Próba</th>
                                 <th>Data</th>
                                 <th>Status</th>
                             </tr>
@@ -95,7 +100,7 @@ function getProgressColor($percent) {
                                     <td><?php echo htmlspecialchars($l['login_attempted']); ?></td>
                                     <td><?php echo $l['datetime']; ?></td>
                                     <td class="<?php echo $l['state'] ? 'log-success' : 'log-fail'; ?>">
-                                        <?php echo $l['state'] ? 'OK' : 'FAIL'; ?>
+                                        <?php echo $l['state'] ? 'SUKCES' : 'BŁĄD'; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

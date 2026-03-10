@@ -12,13 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $idp_wykonawca = (int)$_POST['idp_wykonawca']; // ID przypisanego pracownika
     $nazwa = trim($_POST['nazwa_podzadania']);
     $user_id = $_SESSION['lab13_user_id'];
+    $is_admin = ($_SESSION['lab13_login'] === 'admin');
 
-    // Weryfikacja: Tylko manager zadania (osoba która je dodała) może dodawać podzadania
+    // Weryfikacja: Tylko manager zadania LUB administrator może dodawać podzadania
     $stmt_check = $conn->prepare("SELECT idp FROM zadanie WHERE idz = ?");
     $stmt_check->execute([$idz]);
     $zadanie = $stmt_check->fetch();
 
-    if ($zadanie && $zadanie['idp'] == $user_id) {
+    if ($is_admin || ($zadanie && $zadanie['idp'] == $user_id)) {
         if (!empty($nazwa)) {
             try {
                 $stmt = $conn->prepare("INSERT INTO podzadanie (idz, idp, nazwa_podzadania, stan) VALUES (?, ?, ?, 0)");
