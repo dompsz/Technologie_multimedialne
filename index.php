@@ -82,6 +82,11 @@
                 <h2>Zadanie 12b</h2>
                 <p>Arduino i IoT</p>
             </a>
+            <a href="lab13/index.php" class="tile">
+                <div class="lab-icon">📝</div>
+                <h2>Zadanie 13</h2>
+                <p>Aplikacja Todo</p>
+            </a>
         </div>
     </div>
 </body>
