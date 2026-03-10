@@ -49,32 +49,34 @@ try {
         <h2 class="mb-4">Historia Pomiarów</h2>
         
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover text-center">
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
-                        <th>x1</th>
-                        <th>x2</th>
-                        <th>x3</th>
-                        <th>x4</th>
-                        <th>x5</th>
+                        <th>v0</th>
+                        <th>v1</th>
+                        <th>v2</th>
+                        <th>v3</th>
+                        <th>v4</th>
+                        <th>v5</th>
                         <th>Data i Godzina</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($pomiary)): ?>
                         <tr>
-                            <td colspan="7" class="text-center text-muted">Brak danych w bazie.</td>
+                            <td colspan="8" class="text-center text-muted">Brak danych w bazie.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($pomiary as $row): ?>
                         <tr>
                             <td><?php echo $row['id']; ?></td>
-                            <td><?php echo number_format($row['x1'], 2); ?></td>
-                            <td><?php echo number_format($row['x2'], 2); ?></td>
-                            <td><?php echo number_format($row['x3'], 2); ?></td>
-                            <td><?php echo number_format($row['x4'], 2); ?></td>
-                            <td><?php echo number_format($row['x5'], 2); ?></td>
+                            <td><?php echo number_format($row['v0'], 2); ?></td>
+                            <td><?php echo number_format($row['v1'], 2); ?></td>
+                            <td><?php echo number_format($row['v2'], 2); ?></td>
+                            <td><?php echo number_format($row['v3'], 2); ?></td>
+                            <td><?php echo number_format($row['v4'], 2); ?></td>
+                            <td><?php echo number_format($row['v5'], 2); ?></td>
                             <td><?php echo $row['datetime']; ?></td>
                         </tr>
                         <?php endforeach; ?>

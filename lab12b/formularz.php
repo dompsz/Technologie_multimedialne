@@ -39,35 +39,45 @@ if(!isset($_SESSION['lab12b_user_id'])) {
     </div>
 
     <div class="card">
-        <h2 class="mb-4 text-center">Wprowadzanie Pomiarów (x1-x5)</h2>
+        <h2 class="mb-4 text-center">Wprowadzanie Pomiarów (v0-v5)</h2>
         
         <?php if(isset($_GET['success'])): ?>
             <div class="alert alert-success">Pomiary zostały zapisane pomyślnie!</div>
         <?php endif; ?>
 
         <form action="add.php" method="POST">
-            <div class="mb-3">
-                <label for="x1" class="form-label">Czujnik x1:</label>
-                <input type="number" step="0.01" class="form-control" id="x1" name="x1" required>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="v0" class="form-label">Czujnik v0:</label>
+                    <input type="number" step="0.01" class="form-control" id="v0" name="v0" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="v1" class="form-label">Czujnik v1:</label>
+                    <input type="number" step="0.01" class="form-control" id="v1" name="v1" required>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="x2" class="form-label">Czujnik x2:</label>
-                <input type="number" step="0.01" class="form-control" id="x2" name="x2" required>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="v2" class="form-label">Czujnik v2:</label>
+                    <input type="number" step="0.01" class="form-control" id="v2" name="v2" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="v3" class="form-label">Czujnik v3:</label>
+                    <input type="number" step="0.01" class="form-control" id="v3" name="v3" required>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="x3" class="form-label">Czujnik x3:</label>
-                <input type="number" step="0.01" class="form-control" id="x3" name="x3" required>
-            </div>
-            <div class="mb-3">
-                <label for="x4" class="form-label">Czujnik x4:</label>
-                <input type="number" step="0.01" class="form-control" id="x4" name="x4" required>
-            </div>
-            <div class="mb-3">
-                <label for="x5" class="form-label">Czujnik x5:</label>
-                <input type="number" step="0.01" class="form-control" id="x5" name="x5" required>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="v4" class="form-label">Czujnik v4:</label>
+                    <input type="number" step="0.01" class="form-control" id="v4" name="v4" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="v5" class="form-label">Czujnik v5:</label>
+                    <input type="number" step="0.01" class="form-control" id="v5" name="v5" required>
+                </div>
             </div>
             
-            <div class="d-grid gap-2">
+            <div class="d-grid gap-2 mt-3">
                 <button type="submit" class="btn btn-primary">Zapisz Pomiar</button>
                 <a href="tabela.php" class="btn btn-outline-info">Zobacz Tabelę Wyników</a>
                 <a href="scada.php" class="btn btn-outline-light">Wizualizacja SCADA</a>

@@ -81,11 +81,12 @@ if(!isset($_SESSION['lab12b_user_id'])) {
         </svg>
 
         <!-- Dynamiczne Tagi Sensorów -->
-        <div id="sensor-x1" class="sensor-tag" style="top: 150px; left: 150px;">x1: -- V</div>
-        <div id="sensor-x2" class="sensor-tag" style="top: 150px; left: 400px;">x2: -- V</div>
-        <div id="sensor-x3" class="sensor-tag" style="top: 280px; left: 400px;">x3: -- V</div>
-        <div id="sensor-x4" class="sensor-tag" style="top: 150px; left: 650px;">x4: -- V</div>
-        <div id="sensor-x5" class="sensor-tag" style="top: 320px; left: 150px;">x5: -- V</div>
+        <div id="sensor-v0" class="sensor-tag" style="top: 150px; left: 150px;">v0: -- V</div>
+        <div id="sensor-v1" class="sensor-tag" style="top: 150px; left: 400px;">v1: -- V</div>
+        <div id="sensor-v2" class="sensor-tag" style="top: 280px; left: 400px;">v2: -- V</div>
+        <div id="sensor-v3" class="sensor-tag" style="top: 150px; left: 650px;">v3: -- V</div>
+        <div id="sensor-v4" class="sensor-tag" style="top: 320px; left: 150px;">v4: -- V</div>
+        <div id="sensor-v5" class="sensor-tag" style="top: 320px; left: 650px;">v5: -- V</div>
     </div>
 
     <div class="status-panel card p-3 mx-auto" style="max-width: 400px;">
@@ -106,11 +107,12 @@ function updateSCADA() {
                 return;
             }
             
-            document.getElementById('sensor-x1').innerText = 'x1: ' + parseFloat(data.x1).toFixed(2) + ' V';
-            document.getElementById('sensor-x2').innerText = 'x2: ' + parseFloat(data.x2).toFixed(2) + ' V';
-            document.getElementById('sensor-x3').innerText = 'x3: ' + parseFloat(data.x3).toFixed(2) + ' V';
-            document.getElementById('sensor-x4').innerText = 'x4: ' + parseFloat(data.x4).toFixed(2) + ' V';
-            document.getElementById('sensor-x5').innerText = 'x5: ' + parseFloat(data.x5).toFixed(2) + ' V';
+            document.getElementById('sensor-v0').innerText = 'v0: ' + parseFloat(data.v0).toFixed(2) + ' V';
+            document.getElementById('sensor-v1').innerText = 'v1: ' + parseFloat(data.v1).toFixed(2) + ' V';
+            document.getElementById('sensor-v2').innerText = 'v2: ' + parseFloat(data.v2).toFixed(2) + ' V';
+            document.getElementById('sensor-v3').innerText = 'v3: ' + parseFloat(data.v3).toFixed(2) + ' V';
+            document.getElementById('sensor-v4').innerText = 'v4: ' + parseFloat(data.v4).toFixed(2) + ' V';
+            document.getElementById('sensor-v5').innerText = 'v5: ' + parseFloat(data.v5).toFixed(2) + ' V';
             
             document.getElementById('last-update').innerText = data.datetime.split(' ')[1];
             document.getElementById('status-indicator').className = 'badge bg-success';

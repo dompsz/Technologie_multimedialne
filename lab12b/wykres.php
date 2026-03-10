@@ -12,19 +12,21 @@ try {
     $data = $stmt->fetchAll();
     
     $labels = [];
-    $x1_vals = [];
-    $x2_vals = [];
-    $x3_vals = [];
-    $x4_vals = [];
-    $x5_vals = [];
+    $v0_vals = [];
+    $v1_vals = [];
+    $v2_vals = [];
+    $v3_vals = [];
+    $v4_vals = [];
+    $v5_vals = [];
     
     foreach ($data as $row) {
         $labels[] = substr($row['datetime'], 11, 8); // Sama godzina
-        $x1_vals[] = $row['x1'];
-        $x2_vals[] = $row['x2'];
-        $x3_vals[] = $row['x3'];
-        $x4_vals[] = $row['x4'];
-        $x5_vals[] = $row['x5'];
+        $v0_vals[] = $row['v0'];
+        $v1_vals[] = $row['v1'];
+        $v2_vals[] = $row['v2'];
+        $v3_vals[] = $row['v3'];
+        $v4_vals[] = $row['v4'];
+        $v5_vals[] = $row['v5'];
     }
 } catch(PDOException $e) {
     die("Błąd pobierania danych: " . $e->getMessage());
@@ -53,7 +55,7 @@ try {
     </div>
 
     <div class="card p-4 shadow">
-        <h2 class="mb-4">Wykres Pomiarów x1 - x5</h2>
+        <h2 class="mb-4 text-center">Wykres Pomiarów v0 - v5</h2>
         <div style="height: 500px;">
             <canvas id="myChart"></canvas>
         </div>
@@ -70,11 +72,12 @@ const myChart = new Chart(ctx, {
     data: {
         labels: <?php echo json_encode($labels); ?>,
         datasets: [
-            { label: 'x1', data: <?php echo json_encode($x1_vals); ?>, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1 },
-            { label: 'x2', data: <?php echo json_encode($x2_vals); ?>, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 },
-            { label: 'x3', data: <?php echo json_encode($x3_vals); ?>, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 },
-            { label: 'x4', data: <?php echo json_encode($x4_vals); ?>, borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 },
-            { label: 'x5', data: <?php echo json_encode($x5_vals); ?>, borderColor: 'rgba(255, 159, 64, 1)', tension: 0.1 }
+            { label: 'v0', data: <?php echo json_encode($v0_vals); ?>, borderColor: 'rgba(255, 99, 132, 1)', tension: 0.1 },
+            { label: 'v1', data: <?php echo json_encode($v1_vals); ?>, borderColor: 'rgba(54, 162, 235, 1)', tension: 0.1 },
+            { label: 'v2', data: <?php echo json_encode($v2_vals); ?>, borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 },
+            { label: 'v3', data: <?php echo json_encode($v3_vals); ?>, borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 },
+            { label: 'v4', data: <?php echo json_encode($v4_vals); ?>, borderColor: 'rgba(255, 159, 64, 1)', tension: 0.1 },
+            { label: 'v5', data: <?php echo json_encode($v5_vals); ?>, borderColor: 'rgba(46, 204, 113, 1)', tension: 0.1 }
         ]
     },
     options: {
@@ -84,7 +87,7 @@ const myChart = new Chart(ctx, {
             y: {
                 beginAtZero: true,
                 grid: { color: '#333' },
-                title: { display: true, text: 'Pomiary', color: '#e0e0e0' }
+                title: { display: true, text: 'Wartość [V]', color: '#e0e0e0' }
             },
             x: {
                 grid: { color: '#333' },
