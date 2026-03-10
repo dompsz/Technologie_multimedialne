@@ -45,4 +45,4 @@ CREATE TABLE IF NOT EXISTS `podzadanie` (
 -- Inicjalne konto administratora (hasło: admin)
 -- Uwaga: W docelowej aplikacji hasło powinno być zahaszowane (password_hash).
 -- Na potrzeby lab, jeśli system logowania używa password_verify, należy użyć hasha.
-INSERT INTO `pracownik` (`login`, `password`) VALUES ('admin', '$2y$10$mC7uWu96M78N40V9z.6Y2eY2oWz3xJz.y/7u9p8z6z6z6z6z6z6z6'); -- hash dla 'admin'
+INSERT INTO `pracownik` (`login`, `password`) VALUES ('admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy'); -- to jest tylko placeholder, zaraz wgram skrypt który to naprawi w bazie
