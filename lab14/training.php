@@ -25,6 +25,13 @@ if (!$test) {
     <title>Szkolenie: <?php echo htmlspecialchars($test['nazwa_testu']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
+    <style>
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); color: #fff !important; }
+        .text-secondary { color: #bbb !important; }
+        .text-info { color: var(--accent-color) !important; }
+        .alert-info { border-color: var(--accent-color) !important; }
+        h2, h3, h4 { color: #fff !important; }
+    </style>
 </head>
 <body class="bg-dark text-light">
     <div class="container mt-5">

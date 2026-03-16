@@ -30,9 +30,15 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); color: white; margin-bottom: 20px; }
-        .btn-accent { background: var(--accent-color); color: black; font-weight: bold; }
-        .btn-accent:hover { background: var(--accent-hover); }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); color: white !important; margin-bottom: 20px; }
+        .btn-accent { background: var(--accent-color) !important; color: black !important; font-weight: bold; }
+        .btn-accent:hover { background: var(--accent-hover) !important; }
+        /* Naprawa czarnego tekstu */
+        .text-secondary, .text-muted { color: #bbb !important; }
+        .btn-outline-light { color: #fff !important; border-color: #fff !important; }
+        .btn-outline-light:hover { background-color: #fff !important; color: #000 !important; }
+        h1, h3, h4, h6 { color: #fff !important; }
+        .list-group-item { color: #eee !important; }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -49,17 +55,35 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
             <div class="col-md-8">
                 <h3>Dostępne Kursy i Testy</h3>
                 <hr>
-                <?php foreach ($testy as $t): ?>
-                    <div class="card p-4">
-                        <h4><?php echo htmlspecialchars($t['nazwa_testu']); ?></h4>
-                        <p class="text-secondary"><?php echo htmlspecialchars($t['opis']); ?></p>
-                        <p><small>Czas na rozwiązanie: <?php echo floor($t['czas_trwania'] / 60); ?> min</small></p>
-                        <div class="d-flex gap-2">
-                            <a href="training.php?id=<?php echo $t['id_testu']; ?>" class="btn btn-outline-info">Moduł Szkoleniowy</a>
-                            <a href="test.php?id=<?php echo $t['id_testu']; ?>" class="btn btn-accent">Rozpocznij Test</a>
-                        </div>
+                <?php if (empty($testy)): ?>
+                    <div class="alert alert-info bg-dark text-info border-info">
+                        Obecnie brak dostępnych testów w systemie.
                     </div>
-                <?php endforeach; ?>
+                <?php else: ?>
+                    <?php foreach ($testy as $t): 
+                        // Sprawdź czy użytkownik już zdał ten test (>= 50%)
+                        $passed = false;
+                        foreach ($moje_wyniki as $w) {
+                            if ($w['id_testu'] == $t['id_testu'] && $w['wynik_procentowy'] >= 50) {
+                                $passed = true;
+                                break;
+                            }
+                        }
+                    ?>
+                        <div class="card p-4 position-relative">
+                            <?php if ($passed): ?>
+                                <span class="badge bg-success position-absolute top-0 end-0 m-3">UKOŃCZONO ✓</span>
+                            <?php endif; ?>
+                            <h4><?php echo htmlspecialchars($t['nazwa_testu']); ?></h4>
+                            <p class="text-secondary"><?php echo htmlspecialchars($t['opis']); ?></p>
+                            <p><small class="text-muted">⏱️ Czas: <?php echo floor($t['czas_trwania'] / 60); ?> min</small></p>
+                            <div class="d-flex gap-2">
+                                <a href="training.php?id=<?php echo $t['id_testu']; ?>" class="btn btn-outline-info">📖 Szkolenie</a>
+                                <a href="test.php?id=<?php echo $t['id_testu']; ?>" class="btn btn-accent">📝 <?php echo $passed ? 'Powtórz Test' : 'Rozpocznij Test'; ?></a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
             <div class="col-md-4">

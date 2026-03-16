@@ -54,6 +54,14 @@ $test_info = $stmt_test->fetch();
     <title>Wynik Testu - Lab 14</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
+    <style>
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); color: #fff !important; }
+        .btn-accent { background: var(--accent-color) !important; color: #000 !important; font-weight: bold; }
+        h2, h4 { color: #fff !important; }
+        .lead { color: #eee !important; }
+        .alert-success { color: #28a745 !important; border-color: #28a745 !important; }
+        .alert-danger { color: #dc3545 !important; border-color: #dc3545 !important; }
+    </style>
 </head>
 <body class="bg-dark text-light">
     <div class="container mt-5 text-center">

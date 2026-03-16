@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `wyniki` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Przykładowe dane
-INSERT INTO `testy` (`nazwa_testu`, `opis`, `czas_trwania`) VALUES ('Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy.', 300);
+INSERT INTO `testy` (`nazwa_testu`, `opis`, `czas_trwania`) VALUES ('Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy.', 120);
 
 SET @test_id = LAST_INSERT_ID();
 
