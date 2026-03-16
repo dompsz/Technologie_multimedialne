@@ -60,6 +60,14 @@ $all_tasks = $stmt_all_tasks->fetchAll();
         .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .bg-success-dot { background-color: #28a745; }
         .bg-danger-dot { background-color: #dc3545; }
+        
+        /* Poprawki widoczności tekstu */
+        .text-secondary, .text-muted { color: #bbb !important; }
+        .table thead th { color: #fff !important; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        .table tbody td { color: #eee !important; }
+        h2, h4 { color: #fff !important; }
+        .btn-outline-secondary { color: #fff; border-color: #555; }
+        .btn-outline-secondary:hover { background-color: #444; color: #fff; }
     </style>
 </head>
 <body class="bg-dark text-light">
