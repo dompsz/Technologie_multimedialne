@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `wyniki` (
   CONSTRAINT `fk_wyniki_testy` FOREIGN KEY (`id_testu`) REFERENCES `testy` (`id_testu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
 -- SEEDOWANIE DANYCH (UPSERT - Naprawia nazwy i treści bez kasowania wyników)
 
 -- 1. KONTO ADMINA
@@ -84,3 +85,27 @@ INSERT INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `cz
 VALUES (7, 3, 'PNG', 1), (8, 3, 'JPG', 0), (9, 3, 'BMP', 0),
        (10, 4, 'Frames Per Second', 1), (11, 4, 'File Per Second', 0), (12, 4, 'Format Process System', 0)
 ON DUPLICATE KEY UPDATE tresc_odpowiedzi=VALUES(tresc_odpowiedzi), czy_poprawna=VALUES(czy_poprawna);
+=======
+-- SEEDOWANIE DANYCH (INSERT IGNORE zapobiega błędom przy duplikatach i nie kasuje istniejących danych)
+
+-- 1. KONTO ADMINA
+INSERT IGNORE INTO `users` (`id`, `username`, `password`) VALUES (1, 'admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy'); -- hasło: admin
+
+-- 2. TEST 1: BHP
+INSERT IGNORE INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) VALUES (1, 'Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy.', 120);
+
+INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (1, 'Jakie są kolory ostrzegawcze?', 1);
+INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (1, 1, 'Żółty i czarny', 1), (2, 1, 'Niebieski i biały', 0), (3, 1, 'Zielony i fioletowy', 0);
+
+INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (2, 'Co należy zrobić w razie pożaru?', 1);
+INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (4, 2, 'Uciekać windą', 0), (5, 2, 'Użyć gaśnicy (jeśli bezpieczne) i wezwać straż', 1), (6, 2, 'Otworzyć wszystkie okna', 0);
+
+-- 3. TEST 2: Wdrażanie (Onboarding)
+INSERT IGNORE INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) VALUES (2, 'Wdrażanie do pracy', 'Zapoznanie z kulturą firmy i procedurami wewnętrznymi.', 180);
+
+INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (3, 'Gdzie zgłaszać wnioski urlopowe?', 2);
+INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (7, 3, 'W systemie HR / Portalu pracowniczym', 1), (8, 3, 'Na Facebooku firmy', 0), (9, 3, 'U ochrony budynku', 0);
+
+INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (4, 'Co jest kluczową wartością naszej firmy?', 2);
+INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (10, 4, 'Szybki zysk za wszelką cenę', 0), (11, 4, 'Innowacyjność i praca zespołowa', 1), (12, 4, 'Spóźnianie się na spotkania', 0);
+>>>>>>> 50fca0a3cfe4c4a3370871776d97ff2b77bf3d5c
