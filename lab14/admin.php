@@ -47,7 +47,7 @@ $test_stats = $stmt_stats->fetchAll();
                 <h2>🛡️ Panel Administratora E-learning</h2>
                 <p class="text-secondary mb-0">Podgląd postępów wszystkich pracowników</p>
             </div>
-            <a href="index.php" class="btn btn-outline-light">Powrót do Dashboardu</a>
+            <a href="index.php" class="btn btn-danger">Powrót do Dashboardu</a>
         </div>
 
         <div class="row">
@@ -70,10 +70,16 @@ $test_stats = $stmt_stats->fetchAll();
                                         <td><?php echo htmlspecialchars($ts['nazwa_testu']); ?></td>
                                         <td><?php echo $ts['podejscia']; ?></td>
                                         <td>
-                                            <div class="progress bg-secondary" style="height: 10px; width: 100px; display: inline-block; margin-right: 10px;">
-                                                <div class="progress-bar bg-info" style="width: <?php echo $ts['sredni_wynik']; ?>%"></div>
+                                            <div class="progress bg-dark" style="height: 12px; width: 150px; border: 1px solid #444;">
+                                                <div class="progress-bar bg-info" 
+                                                     role="progressbar" 
+                                                     style="width: <?php echo $ts['sredni_wynik']; ?>%;" 
+                                                     aria-valuenow="<?php echo $ts['sredni_wynik']; ?>" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
                                             </div>
-                                            <?php echo round($ts['sredni_wynik']); ?>%
+                                            <span class="small"><?php echo round($ts['sredni_wynik']); ?>%</span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

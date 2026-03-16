@@ -46,7 +46,7 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Witaj, <?php echo htmlspecialchars($_SESSION['lab14_username']); ?>! 🎓</h1>
             <div>
-                <a href="../index.php" class="btn btn-outline-light me-2">Strona Główna</a>
+                <a href="../index.php" class="btn btn-danger me-2">Strona Główna</a>
                 <?php if ($_SESSION['lab14_username'] === 'admin'): ?>
                     <a href="admin.php" class="btn btn-warning me-2">🛡️ Panel Admina</a>
                 <?php endif; ?>
