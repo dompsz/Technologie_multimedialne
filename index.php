@@ -87,6 +87,11 @@
                 <h2>Zadanie 13</h2>
                 <p>Aplikacja Todo</p>
             </a>
+            <a href="lab14/index.php" class="tile">
+                <div class="lab-icon">🎓</div>
+                <h2>Zadanie 14</h2>
+                <p>System E-learningowy</p>
+            </a>
         </div>
     </div>
 </body>
