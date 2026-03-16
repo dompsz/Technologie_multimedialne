@@ -22,13 +22,13 @@
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
         }
         .tile {
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            padding: 30px;
+            padding: 20px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
@@ -36,7 +36,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-height: 200px;
+            min-height: 160px;
         }
         .tile:hover {
             transform: translateY(-5px);
