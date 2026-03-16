@@ -47,6 +47,9 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
             <h1>Witaj, <?php echo htmlspecialchars($_SESSION['lab14_username']); ?>! 🎓</h1>
             <div>
                 <a href="../index.php" class="btn btn-outline-light me-2">Strona Główna</a>
+                <?php if ($_SESSION['lab14_username'] === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-warning me-2">🛡️ Panel Admina</a>
+                <?php endif; ?>
                 <a href="logout.php" class="btn btn-danger">Wyloguj</a>
             </div>
         </div>
