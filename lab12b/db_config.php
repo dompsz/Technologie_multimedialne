@@ -18,20 +18,12 @@ if (strpos($host_raw, ':') !== false) {
     $port = '3306';
 }
 
-// Test łączności z portem (diagnostyka)
-$connection_test = @fsockopen($host, $port, $errno, $errstr, 2);
-if (!$connection_test) {
-    die("Błąd: Port $port na serwerze $host jest NIEOSIĄGALNY.<br>Prawdopodobnie Twój hosting blokuje połączenia wychodzące na ten port.<br>Systemowy błąd: $errstr ($errno)");
-} else {
-    fclose($connection_test);
-}
-
 try {
-    $dsn = "mysql:host=$host;port=$port;dbname=$db_name;charset=utf8mb4";
-    $conn = new PDO($dsn, $db_user, $db_pass);
+    // Niektóre hostingi wolą port podany bezpośrednio w host
+    $conn = new PDO("mysql:host=$host;port=$port;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("Błąd połączenia Lab 12b!<br>DSN: mysql:host=$host;port=$port;dbname=$db_name<br>User: $db_user<br>Error: " . $e->getMessage());
+    echo "Błąd połączenia Lab 12b: " . $e->getMessage();
 }
 ?>
