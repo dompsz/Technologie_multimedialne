@@ -33,9 +33,12 @@ $czas_trwania = $test['czas_trwania']; // w sekundach
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        #timer { font-size: 1.5rem; font-weight: bold; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 2px solid var(--accent-color); z-index: 1000; }
-        .question-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        #timer { font-size: 1.5rem; font-weight: bold; position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; border: 2px solid var(--accent-color); z-index: 1000; color: #fff; }
+        .question-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #fff !important; }
         .form-check-input:checked { background-color: var(--accent-color); border-color: var(--accent-color); }
+        .form-check-label { color: #eee !important; cursor: pointer; }
+        .text-secondary { color: #bbb !important; }
+        h2, h5 { color: #fff !important; }
     </style>
 </head>
 <body class="bg-dark text-light">
