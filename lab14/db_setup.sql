@@ -51,15 +51,36 @@ CREATE TABLE IF NOT EXISTS `wyniki` (
   CONSTRAINT `fk_wyniki_testy` FOREIGN KEY (`id_testu`) REFERENCES `testy` (`id_testu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Przykładowe dane
-INSERT INTO `testy` (`nazwa_testu`, `opis`, `czas_trwania`) VALUES ('Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy.', 120);
+-- SEEDOWANIE DANYCH (UPSERT - Naprawia nazwy i treści bez kasowania wyników)
 
-SET @test_id = LAST_INSERT_ID();
+-- 1. KONTO ADMINA
+INSERT IGNORE INTO `users` (`id`, `username`, `password`) VALUES (1, 'admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy');
 
-INSERT INTO `pytania` (`tresc_pytania`, `id_testu`) VALUES ('Jakie są kolory ostrzegawcze?', @test_id);
-SET @p1 = LAST_INSERT_ID();
-INSERT INTO `odpowiedzi` (`id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (@p1, 'Żółty i czarny', 1), (@p1, 'Niebieski i biały', 0), (@p1, 'Zielony i fioletowy', 0);
+-- 2. TEST 1: BHP
+INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) 
+VALUES (1, 'Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy w biurze.', 120)
+ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), czas_trwania=VALUES(czas_trwania);
 
-INSERT INTO `pytania` (`tresc_pytania`, `id_testu`) VALUES ('Co należy zrobić w razie pożaru?', @test_id);
-SET @p2 = LAST_INSERT_ID();
-INSERT INTO `odpowiedzi` (`id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (@p2, 'Uciekać windą', 0), (@p2, 'Użyć gaśnicy (jeśli bezpieczne) i wezwać straż', 1), (@p2, 'Otworzyć wszystkie okna', 0);
+INSERT INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) 
+VALUES (1, 'Jakie są kolory ostrzegawcze?', 1), (2, 'Co należy zrobić w razie pożaru?', 1)
+ON DUPLICATE KEY UPDATE tresc_pytania=VALUES(tresc_pytania), id_testu=VALUES(id_testu);
+
+INSERT INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) 
+VALUES (1, 1, 'Żółty i czarny', 1), (2, 1, 'Niebieski i biały', 0), (3, 1, 'Zielony i fioletowy', 0),
+       (4, 2, 'Uciekać windą', 0), (5, 2, 'Użyć gaśnicy i wezwać straż', 1), (6, 2, 'Otworzyć wszystkie okna', 0)
+ON DUPLICATE KEY UPDATE tresc_odpowiedzi=VALUES(tresc_odpowiedzi), czy_poprawna=VALUES(czy_poprawna);
+
+-- 3. TEST 2: TECHNOLOGIE MULTIMEDIALNE (Nowy Content)
+INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) 
+VALUES (2, 'Technologie Multimedialne', 'Weryfikacja wiedzy z zakresu grafiki, dźwięku i wideo.', 180)
+ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), czas_trwania=VALUES(czas_trwania);
+
+INSERT INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) 
+VALUES (3, 'Który format pliku obsługuje przezroczystość i jest bezstratny?', 2),
+       (4, 'Co oznacza skrót FPS w kontekście wideo?', 2)
+ON DUPLICATE KEY UPDATE tresc_pytania=VALUES(tresc_pytania), id_testu=VALUES(id_testu);
+
+INSERT INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) 
+VALUES (7, 3, 'PNG', 1), (8, 3, 'JPG', 0), (9, 3, 'BMP', 0),
+       (10, 4, 'Frames Per Second', 1), (11, 4, 'File Per Second', 0), (12, 4, 'Format Process System', 0)
+ON DUPLICATE KEY UPDATE tresc_odpowiedzi=VALUES(tresc_odpowiedzi), czy_poprawna=VALUES(czy_poprawna);
