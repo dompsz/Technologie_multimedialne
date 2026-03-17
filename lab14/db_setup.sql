@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role` ENUM('user', 'coach', 'admin') DEFAULT 'user',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `testy` (
   `id_testu` int(11) NOT NULL AUTO_INCREMENT,
   `nazwa_testu` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `opis` text COLLATE utf8mb4_unicode_ci,
+  `tresc_szkolenia` LONGTEXT COLLATE utf8mb4_unicode_ci,
   `czas_trwania` int(11) NOT NULL DEFAULT 600 COMMENT 'Czas w sekundach (domyślnie 10 min)',
   PRIMARY KEY (`id_testu`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -51,16 +53,18 @@ CREATE TABLE IF NOT EXISTS `wyniki` (
   CONSTRAINT `fk_wyniki_testy` FOREIGN KEY (`id_testu`) REFERENCES `testy` (`id_testu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-<<<<<<< HEAD
 -- SEEDOWANIE DANYCH (UPSERT - Naprawia nazwy i treści bez kasowania wyników)
 
--- 1. KONTO ADMINA
-INSERT IGNORE INTO `users` (`id`, `username`, `password`) VALUES (1, 'admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy');
+-- 1. KONTA (Admin i Coach)
+INSERT INTO `users` (`id`, `username`, `password`, `role`) VALUES 
+(1, 'admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy', 'admin'),
+(2, 'coach', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'coach')
+ON DUPLICATE KEY UPDATE role=VALUES(role);
 
 -- 2. TEST 1: BHP
-INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) 
-VALUES (1, 'Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy w biurze.', 120)
-ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), czas_trwania=VALUES(czas_trwania);
+INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `tresc_szkolenia`, `czas_trwania`) 
+VALUES (1, 'Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy w biurze.', '<h4>Temat: Bezpieczeństwo w biurze</h4><p>Podstawowe kolory ostrzegawcze to żółty i czarny. W razie pożaru należy użyć gaśnicy i wezwać straż pożarną. Pamiętaj o regularnych przerwach w pracy przy komputerze.</p><img src=\"https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800\" class=\"img-fluid rounded my-3\" alt=\"BHP\">', 120)
+ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), tresc_szkolenia=VALUES(tresc_szkolenia), czas_trwania=VALUES(czas_trwania);
 
 INSERT INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) 
 VALUES (1, 'Jakie są kolory ostrzegawcze?', 1), (2, 'Co należy zrobić w razie pożaru?', 1)
@@ -71,10 +75,10 @@ VALUES (1, 1, 'Żółty i czarny', 1), (2, 1, 'Niebieski i biały', 0), (3, 1, '
        (4, 2, 'Uciekać windą', 0), (5, 2, 'Użyć gaśnicy i wezwać straż', 1), (6, 2, 'Otworzyć wszystkie okna', 0)
 ON DUPLICATE KEY UPDATE tresc_odpowiedzi=VALUES(tresc_odpowiedzi), czy_poprawna=VALUES(czy_poprawna);
 
--- 3. TEST 2: TECHNOLOGIE MULTIMEDIALNE (Nowy Content)
-INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) 
-VALUES (2, 'Technologie Multimedialne', 'Weryfikacja wiedzy z zakresu grafiki, dźwięku i wideo.', 180)
-ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), czas_trwania=VALUES(czas_trwania);
+-- 3. TEST 2: TECHNOLOGIE MULTIMEDIALNE
+INSERT INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `tresc_szkolenia`, `czas_trwania`) 
+VALUES (2, 'Technologie Multimedialne', 'Weryfikacja wiedzy z zakresu grafiki, dźwięku i wideo.', '<h4>Temat: Formaty Graficzne i Wideo</h4><p><strong>PNG (Portable Network Graphics):</strong> Bezstratny format graficzny obsługujący przezroczystość (kanał alfa). Idealny do logotypów i grafik webowych.</p><p><strong>JPG (Joint Photographic Experts Group):</strong> Stratny format, najlepszy do zdjęć fotograficznych.</p><p><strong>FPS (Frames Per Second):</strong> Liczba klatek na sekundę. Standardy to zazwyczaj 24 (film), 30 lub 60 (gry i wideo płynne).</p><img src=\"https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800\" class=\"img-fluid rounded my-3\" alt=\"Multimedia\">', 180)
+ON DUPLICATE KEY UPDATE nazwa_testu=VALUES(nazwa_testu), opis=VALUES(opis), tresc_szkolenia=VALUES(tresc_szkolenia), czas_trwania=VALUES(czas_trwania);
 
 INSERT INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) 
 VALUES (3, 'Który format pliku obsługuje przezroczystość i jest bezstratny?', 2),
@@ -85,27 +89,3 @@ INSERT INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `cz
 VALUES (7, 3, 'PNG', 1), (8, 3, 'JPG', 0), (9, 3, 'BMP', 0),
        (10, 4, 'Frames Per Second', 1), (11, 4, 'File Per Second', 0), (12, 4, 'Format Process System', 0)
 ON DUPLICATE KEY UPDATE tresc_odpowiedzi=VALUES(tresc_odpowiedzi), czy_poprawna=VALUES(czy_poprawna);
-=======
--- SEEDOWANIE DANYCH (INSERT IGNORE zapobiega błędom przy duplikatach i nie kasuje istniejących danych)
-
--- 1. KONTO ADMINA
-INSERT IGNORE INTO `users` (`id`, `username`, `password`) VALUES (1, 'admin', '$2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy'); -- hasło: admin
-
--- 2. TEST 1: BHP
-INSERT IGNORE INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) VALUES (1, 'Test BHP', 'Podstawowe zasady bezpieczeństwa i higieny pracy.', 120);
-
-INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (1, 'Jakie są kolory ostrzegawcze?', 1);
-INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (1, 1, 'Żółty i czarny', 1), (2, 1, 'Niebieski i biały', 0), (3, 1, 'Zielony i fioletowy', 0);
-
-INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (2, 'Co należy zrobić w razie pożaru?', 1);
-INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (4, 2, 'Uciekać windą', 0), (5, 2, 'Użyć gaśnicy (jeśli bezpieczne) i wezwać straż', 1), (6, 2, 'Otworzyć wszystkie okna', 0);
-
--- 3. TEST 2: Wdrażanie (Onboarding)
-INSERT IGNORE INTO `testy` (`id_testu`, `nazwa_testu`, `opis`, `czas_trwania`) VALUES (2, 'Wdrażanie do pracy', 'Zapoznanie z kulturą firmy i procedurami wewnętrznymi.', 180);
-
-INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (3, 'Gdzie zgłaszać wnioski urlopowe?', 2);
-INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (7, 3, 'W systemie HR / Portalu pracowniczym', 1), (8, 3, 'Na Facebooku firmy', 0), (9, 3, 'U ochrony budynku', 0);
-
-INSERT IGNORE INTO `pytania` (`id_pytania`, `tresc_pytania`, `id_testu`) VALUES (4, 'Co jest kluczową wartością naszej firmy?', 2);
-INSERT IGNORE INTO `odpowiedzi` (`id_odpowiedzi`, `id_pytania`, `tresc_odpowiedzi`, `czy_poprawna`) VALUES (10, 4, 'Szybki zysk za wszelką cenę', 0), (11, 4, 'Innowacyjność i praca zespołowa', 1), (12, 4, 'Spóźnianie się na spotkania', 0);
->>>>>>> 50fca0a3cfe4c4a3370871776d97ff2b77bf3d5c

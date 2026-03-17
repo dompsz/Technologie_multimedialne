@@ -44,25 +44,13 @@ if (!$test) {
             <h3>Materiały teoretyczne</h3>
             <hr>
             
-            <?php if ($id_testu == 1): ?>
-                <!-- Treść dla BHP -->
-                <div class="training-content mt-4">
-                    <h4>Temat: Bezpieczeństwo w biurze</h4>
-                    <p>Podstawowe kolory ostrzegawcze to żółty i czarny. W razie pożaru należy użyć gaśnicy i wezwać straż pożarną. Pamiętaj o regularnych przerwach w pracy przy komputerze.</p>
-                    <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800" class="img-fluid rounded my-3" alt="BHP">
-                </div>
-            <?php elseif ($id_testu == 2): ?>
-                <!-- Treść dla TECHNOLOGII MULTIMEDIALNYCH -->
-                <div class="training-content mt-4">
-                    <h4>Temat: Formaty Graficzne i Wideo</h4>
-                    <p><strong>PNG (Portable Network Graphics):</strong> Bezstratny format graficzny obsługujący przezroczystość (kanał alfa). Idealny do logotypów i grafik webowych.</p>
-                    <p><strong>JPG (Joint Photographic Experts Group):</strong> Stratny format, najlepszy do zdjęć fotograficznych.</p>
-                    <p><strong>FPS (Frames Per Second):</strong> Liczba klatek na sekundę. Standardy to zazwyczaj 24 (film), 30 lub 60 (gry i wideo płynne).</p>
-                    <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800" class="img-fluid rounded my-3" alt="Multimedia">
-                </div>
-            <?php else: ?>
-                <p>Brak szczegółowych materiałów dla tego modułu.</p>
-            <?php endif; ?>
+            <div class="training-content mt-4">
+                <?php if (!empty($test['tresc_szkolenia'])): ?>
+                    <?php echo $test['tresc_szkolenia']; ?>
+                <?php else: ?>
+                    <p>Brak szczegółowych materiałów dla tego modułu.</p>
+                <?php endif; ?>
+            </div>
 
             <div class="alert alert-info bg-dark text-info border-info mt-4">
                 <strong>Wskazówka:</strong> Zapamiętaj kluczowe definicje i skróty techniczne przed przejściem do testu.

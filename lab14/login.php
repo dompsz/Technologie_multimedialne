@@ -10,13 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($username) || empty($password)) {
         $error = "Wypełnij wszystkie pola.";
     } else {
-        $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id, username, password, role FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
         if ($user && !empty($user['password']) && password_verify($password, $user['password'])) {
             $_SESSION['lab14_user_id'] = $user['id'];
             $_SESSION['lab14_username'] = $user['username'];
+            $_SESSION['lab14_role'] = $user['role'];
             header("Location: index.php");
             exit();
         } else {

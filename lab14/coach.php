@@ -2,16 +2,16 @@
 session_start();
 require_once 'db_config.php';
 
-// Zabezpieczenie - tylko dla użytkownika o roli 'admin'
-if (!isset($_SESSION['lab14_user_id']) || ($_SESSION['lab14_role'] ?? '') !== 'admin') {
-    die("Brak uprawnień administratora. Musisz być zalogowany jako 'admin'.");
+// Zabezpieczenie - tylko dla użytkownika o roli 'coach' lub 'admin'
+if (!isset($_SESSION['lab14_user_id']) || !in_array(($_SESSION['lab14_role'] ?? ''), ['admin', 'coach'])) {
+    die("Brak uprawnień trenera. Musisz być zalogowany jako trener lub administrator.");
 }
 
-// 1. Pobierz wszystkich użytkowników (oprócz admina)
-$stmt_users = $conn->query("SELECT id, username, created_at FROM users WHERE role != 'admin' ORDER BY created_at DESC");
+// 1. Pobierz wszystkich użytkowników (oprócz admina i coacha dla przejrzystości wyników pracowników)
+$stmt_users = $conn->query("SELECT id, username, created_at FROM users WHERE role = 'user' ORDER BY created_at DESC");
 $all_users = $stmt_users->fetchAll();
 
-// 2. Pobierz statystyki testów (dla raportu ogólnego)
+// 2. Pobierz statystyki testów
 $stmt_stats = $conn->query("
     SELECT t.nazwa_testu, 
            COUNT(w.id_wyniku) as podejscia,
@@ -27,7 +27,7 @@ $test_stats = $stmt_stats->fetchAll();
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Admina - Lab 14 E-learning</title>
+    <title>Panel Trenera - Lab 14 E-learning</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -44,10 +44,13 @@ $test_stats = $stmt_stats->fetchAll();
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2>🛡️ Panel Administratora E-learning</h2>
-                <p class="text-secondary mb-0">Podgląd postępów wszystkich pracowników</p>
+                <h2>📋 Panel Trenera (Coach)</h2>
+                <p class="text-secondary mb-0">Zarządzanie szkoleniami i podgląd wyników</p>
             </div>
-            <a href="index.php" class="btn btn-danger">Powrót do Dashboardu</a>
+            <div class="d-flex gap-2">
+                <a href="manage_trainings.php" class="btn btn-primary">🛠️ Zarządzaj Szkoleniami</a>
+                <a href="index.php" class="btn btn-danger">Powrót do Dashboardu</a>
+            </div>
         </div>
 
         <div class="row">
@@ -73,13 +76,13 @@ $test_stats = $stmt_stats->fetchAll();
                                             <div class="progress bg-dark" style="height: 12px; width: 150px; border: 1px solid #444;">
                                                 <div class="progress-bar bg-info" 
                                                      role="progressbar" 
-                                                     style="width: <?php echo $ts['sredni_wynik']; ?>%;" 
-                                                     aria-valuenow="<?php echo $ts['sredni_wynik']; ?>" 
+                                                     style="width: <?php echo ($ts['sredni_wynik'] ?? 0); ?>%;" 
+                                                     aria-valuenow="<?php echo ($ts['sredni_wynik'] ?? 0); ?>" 
                                                      aria-valuemin="0" 
                                                      aria-valuemax="100">
                                                 </div>
                                             </div>
-                                            <span class="small"><?php echo round($ts['sredni_wynik']); ?>%</span>
+                                            <span class="small"><?php echo round($ts['sredni_wynik'] ?? 0); ?>%</span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -92,7 +95,7 @@ $test_stats = $stmt_stats->fetchAll();
             <!-- Lista Użytkowników i ich wyniki -->
             <div class="col-md-12">
                 <div class="admin-card">
-                    <h4>👥 Postępy Użytkowników</h4>
+                    <h4>👥 Postępy Pracowników</h4>
                     <div class="table-responsive">
                         <table class="table table-dark table-striped align-middle">
                             <thead>

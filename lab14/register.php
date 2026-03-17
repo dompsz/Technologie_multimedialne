@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Użytkownik o takiej nazwie już istnieje.";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+            $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')");
             if ($stmt->execute([$username, $hashed_password])) {
                 $success = "Rejestracja pomyślna. Możesz się <a href='login.php'>zalogować</a>.";
             } else {
