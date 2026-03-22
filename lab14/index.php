@@ -51,7 +51,7 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
                     <a href="admin.php" class="btn btn-warning me-2">🛡️ Panel Admina</a>
                 <?php endif; ?>
                 <?php if (in_array(($_SESSION['lab14_role'] ?? ''), ['admin', 'coach'])): ?>
-                    <a href="coach.php" class="btn btn-primary me-2">📋 Panel Trenera</a>
+                    <a href="coach.php" class="btn btn-primary me-2">📋 Panel Szkoleniowca</a>
                 <?php endif; ?>
                 <a href="logout.php" class="btn btn-danger">Wyloguj</a>
             </div>

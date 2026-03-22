@@ -4,7 +4,7 @@ require_once 'db_config.php';
 
 // Zabezpieczenie - tylko dla użytkownika o roli 'coach' lub 'admin'
 if (!isset($_SESSION['lab14_user_id']) || !in_array(($_SESSION['lab14_role'] ?? ''), ['admin', 'coach'])) {
-    die("Brak uprawnień trenera. Musisz być zalogowany jako trener lub administrator.");
+    die("Brak uprawnień szkoleniowca. Musisz być zalogowany jako szkoleniowiec lub administrator.");
 }
 
 // 1. Pobierz wszystkich użytkowników (oprócz admina i coacha dla przejrzystości wyników pracowników)
@@ -27,7 +27,7 @@ $test_stats = $stmt_stats->fetchAll();
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Trenera - Lab 14 E-learning</title>
+    <title>Panel Szkoleniowca - Lab 14 E-learning</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -44,8 +44,8 @@ $test_stats = $stmt_stats->fetchAll();
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2>📋 Panel Trenera (Coach)</h2>
-                <p class="text-secondary mb-0">Zarządzanie szkoleniami i podgląd wyników</p>
+                <h2>📋 Panel Szkoleniowca (Coach)</h2>
+                <p class="text-secondary mb-0">Zarządzanie szkoleniami i podgląd wyników pracowników</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="manage_trainings.php" class="btn btn-primary">🛠️ Zarządzaj Szkoleniami</a>

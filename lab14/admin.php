@@ -151,6 +151,56 @@ $test_stats = $stmt_stats->fetchAll();
                     </div>
                 </div>
             </div>
+
+            <!-- Pełna Historia Podejść -->
+            <div class="col-md-12">
+                <div class="admin-card">
+                    <h4>📜 Pełna Historia Podejść (Logi)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Użytkownik</th>
+                                    <th>Szkolenie</th>
+                                    <th>Wynik</th>
+                                    <th>Zaliczono</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $stmt_hist = $conn->query("
+                                    SELECT w.*, u.username, t.nazwa_testu 
+                                    FROM wyniki w
+                                    JOIN users u ON w.id_uzytkownika = u.id
+                                    JOIN testy t ON w.id_testu = t.id_testu
+                                    ORDER BY w.data_zakonczenia DESC
+                                    LIMIT 50
+                                ");
+                                while($h = $stmt_hist->fetch()): ?>
+                                    <tr>
+                                        <td class="text-secondary small"><?php echo $h['data_zakonczenia']; ?></td>
+                                        <td class="fw-bold"><?php echo htmlspecialchars($h['username']); ?></td>
+                                        <td><?php echo htmlspecialchars($h['nazwa_testu']); ?></td>
+                                        <td>
+                                            <span class="<?php echo $h['wynik_procentowy'] >= 50 ? 'status-passed' : 'status-failed'; ?>">
+                                                <?php echo round($h['wynik_procentowy']); ?>%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <?php if($h['wynik_procentowy'] >= 50): ?>
+                                                <span class="badge bg-success">TAK</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger">NIE</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
