@@ -96,7 +96,9 @@ if (isset($_GET['delete_a'])) {
         .form-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #fff; }
         .q-card { background: #2a2a2a; border-left: 4px solid var(--accent-color); padding: 15px; margin-bottom: 15px; border-radius: 8px; }
         textarea { background: #1a1a1a !important; color: #fff !important; border-color: #444 !important; }
-        input { background: #1a1a1a !important; color: #fff !important; border-color: #444 !important; }
+        input:not([type="checkbox"]) { background: #1a1a1a !important; color: #fff !important; border-color: #444 !important; }
+        .form-check-input { background-color: #1a1a1a; border-color: #444; cursor: pointer; }
+        .form-check-input:checked { background-color: var(--accent-color); border-color: var(--accent-color); }
         label { color: #bbb; }
     </style>
 </head>
