@@ -24,12 +24,12 @@ if ($id > 0) {
     $pytania = $stmt_p->fetchAll();
 }
 
-// Obsługa zapisu
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nazwa = $_POST['nazwa_testu'];
-    $opis = $_POST['opis'];
-    $tresc = $_POST['tresc_szkolenia'];
-    $czas = (int)$_POST['czas_trwania'];
+// Obsługa zapisu danych podstawowych
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_main'])) {
+    $nazwa = $_POST['nazwa_testu'] ?? '';
+    $opis = $_POST['opis'] ?? '';
+    $tresc = $_POST['tresc_szkolenia'] ?? '';
+    $czas = (int)($_POST['czas_trwania'] ?? 600);
 
     if ($id > 0) {
         $stmt = $conn->prepare("UPDATE testy SET nazwa_testu = ?, opis = ?, tresc_szkolenia = ?, czas_trwania = ? WHERE id_testu = ?");
@@ -40,22 +40,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = $conn->lastInsertId();
     }
     
-    // Obsługa pytań (bardzo uproszczona - usuwamy stare i dodajemy nowe)
-    if (isset($_POST['pytania'])) {
-        // Usuwamy tylko jeśli chcemy nadpisać wszystko
-        // Dla uproszczenia w tej wersji: tylko edycja metadanych tutaj, 
-        // a pytania poniżej jako oddzielne akcje.
-    }
-    
     header("Location: edit_training.php?id=$id&msg=saved");
     exit();
 }
 
 // Obsługa dodawania pytania
 if (isset($_POST['add_question'])) {
-    $tresc_q = $_POST['new_question_text'];
-    $stmt = $conn->prepare("INSERT INTO pytania (tresc_pytania, id_testu) VALUES (?, ?)");
-    $stmt->execute([$tresc_q, $id]);
+    $tresc_q = $_POST['new_question_text'] ?? '';
+    if (!empty($tresc_q)) {
+        $stmt = $conn->prepare("INSERT INTO pytania (tresc_pytania, id_testu) VALUES (?, ?)");
+        $stmt->execute([$tresc_q, $id]);
+    }
     header("Location: edit_training.php?id=$id#questions");
     exit();
 }
@@ -63,7 +58,7 @@ if (isset($_POST['add_question'])) {
 // Obsługa usuwania pytania
 if (isset($_GET['delete_q'])) {
     $qid = (int)$_GET['delete_q'];
-    $conn->prepare("DELETE FROM pytania WHERE id_pytania = ?")->execute([$qid]);
+    $conn->prepare("DELETE FROM pytania WHERE id_pytania = ? AND id_testu = ?")->execute([$qid, $id]);
     header("Location: edit_training.php?id=$id#questions");
     exit();
 }
@@ -71,10 +66,12 @@ if (isset($_GET['delete_q'])) {
 // Obsługa dodawania odpowiedzi
 if (isset($_POST['add_answer'])) {
     $qid = (int)$_POST['question_id'];
-    $tresc_a = $_POST['new_answer_text'];
+    $tresc_a = $_POST['new_answer_text'] ?? '';
     $poprawna = isset($_POST['is_correct']) ? 1 : 0;
-    $stmt = $conn->prepare("INSERT INTO odpowiedzi (id_pytania, tresc_odpowiedzi, czy_poprawna) VALUES (?, ?, ?)");
-    $stmt->execute([$qid, $tresc_a, $poprawna]);
+    if (!empty($tresc_a)) {
+        $stmt = $conn->prepare("INSERT INTO odpowiedzi (id_pytania, tresc_odpowiedzi, czy_poprawna) VALUES (?, ?, ?)");
+        $stmt->execute([$qid, $tresc_a, $poprawna]);
+    }
     header("Location: edit_training.php?id=$id#q_$qid");
     exit();
 }
@@ -134,7 +131,7 @@ if (isset($_GET['delete_a'])) {
                     <textarea name="tresc_szkolenia" class="form-control" rows="10"><?php echo htmlspecialchars($test['tresc_szkolenia']); ?></textarea>
                     <small class="text-muted">Możesz używać tagów HTML (h4, p, img, strong itp.)</small>
                 </div>
-                <button type="submit" class="btn btn-success">Zapisz Dane Podstawowe</button>
+                <button type="submit" name="save_main" class="btn btn-success">Zapisz Dane Podstawowe</button>
             </div>
         </form>
 
