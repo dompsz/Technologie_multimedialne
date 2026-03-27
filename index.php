@@ -92,6 +92,11 @@
                 <h2>Zadanie 14</h2>
                 <p>System E-learningowy</p>
             </a>
+            <a href="lab15/index.php" class="tile">
+                <div class="lab-icon">🏢</div>
+                <h2>Zadanie 15</h2>
+                <p>System CRM</p>
+            </a>
         </div>
     </div>
 </body>
