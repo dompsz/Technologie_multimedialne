@@ -175,11 +175,7 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
 
             <div class="d-flex gap-3 justify-content-center mt-4 no-print">
                 <button id="downloadPdf" class="btn btn-primary px-4">
-<<<<<<< HEAD
                     👁️ Podgląd PDF
-=======
-                    📥 Pobierz PDF
->>>>>>> f1eefb9205f311a7eb88c15c464880b82dbbddae
                 </button>
                 <a href="index.php" class="btn btn-accent px-4">
                     Powrót do Dashboardu
@@ -214,14 +210,10 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-<<<<<<< HEAD
                 
                 // Otwarcie PDF w nowej karcie
                 const blob = pdf.output('bloburl');
                 window.open(blob, '_blank');
-=======
-                pdf.save("Wynik_Testu_<?php echo $id_wyniku; ?>.pdf");
->>>>>>> f1eefb9205f311a7eb88c15c464880b82dbbddae
                 
                 buttons.style.visibility = 'visible';
             });
