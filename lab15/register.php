@@ -13,8 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Wszystkie pola są wymagane.";
     } elseif ($password !== $confirm_password) {
         $error = "Hasła nie są identyczne.";
-    } elseif (strlen($password) < 4) {
-        $error = "Hasło musi mieć co najmniej 4 znaki.";
     } else {
         // Sprawdzenie czy nazwisko zajęte
         $stmt = $conn->prepare("SELECT idk FROM klienci WHERE nazwisko = ?");
@@ -99,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <div class="mb-3">
                     <label class="form-label">Hasło</label>
-                    <input type="password" name="password" class="form-control" placeholder="Co najmniej 4 znaki" required>
+                    <input type="password" name="password" class="form-control" placeholder="Wpisz hasło" required>
                 </div>
 
                 <div class="mb-4">
