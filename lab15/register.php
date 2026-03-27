@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Rejestracja Klienta CRM - Lab 15</title>
+    <title>Rejestracja Klienta - System CRM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         
         <div class="auth-container shadow-lg">
-            <h2 class="text-center mb-4">Rejestracja Klienta 🤝</h2>
+            <h2 class="text-center mb-4">Rejestracja Klienta</h2>
             
             <?php if($error): ?>
                 <div class="error-msg"><?php echo $error; ?></div>
@@ -93,8 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label">Twoje Nazwisko</label>
-                    <input type="text" name="nazwisko" class="form-control" placeholder="Np. Kowalski" required>
+                    <label class="form-label">Nazwisko (Login)</label>
+                    <input type="text" name="nazwisko" class="form-control" placeholder="Wpisz swoje nazwisko" required>
                 </div>
                 
                 <div class="mb-3">

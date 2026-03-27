@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Logowanie CRM - Lab 15</title>
+    <title>Logowanie - System CRM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         
         <div class="auth-container">
-            <h2 class="text-center mb-4">System CRM 🏢</h2>
+            <h2 class="text-center mb-4">System CRM</h2>
             
             <?php if($error): ?>
                 <div class="error-msg"><?php echo $error; ?></div>
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="hidden" name="login_type" id="login_type" value="client">
                 
                 <div class="mb-3">
-                    <label class="form-label" id="label_nazwisko">Nazwisko Klienta</label>
+                    <label class="form-label" id="label_nazwisko">Nazwisko (Login) Klienta</label>
                     <input type="text" name="nazwisko" class="form-control" placeholder="Wpisz nazwisko" required>
                 </div>
                 
@@ -148,10 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             btn.classList.add('active');
 
             if (type === 'client') {
-                label.innerText = 'Nazwisko Klienta';
+                label.innerText = 'Nazwisko (Login) Klienta';
                 regLink.style.display = 'block';
             } else {
-                label.innerText = 'Nazwisko Pracownika / Admina';
+                label.innerText = 'Nazwisko (Login) Pracownika / Admina';
                 regLink.style.display = 'none';
             }
         }
