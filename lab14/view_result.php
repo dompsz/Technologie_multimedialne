@@ -163,8 +163,8 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
             <?php endforeach; ?>
 
             <div class="d-flex gap-3 justify-content-center mt-4 no-print">
-                <button onclick="window.print()" class="btn btn-primary px-4">
-                    🖨️ Generuj PDF / Drukuj
+                <button id="downloadPdf" class="btn btn-primary px-4">
+                    📥 Pobierz PDF
                 </button>
                 <a href="index.php" class="btn btn-accent px-4">
                     Powrót do Dashboardu
@@ -172,5 +172,38 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
             </div>
         </div>
     </div>
+
+    <!-- Biblioteki do generowania PDF po stronie klienta -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        document.getElementById('downloadPdf').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            const element = document.querySelector('.card');
+            const buttons = document.querySelector('.no-print');
+            
+            // Ukryj przyciski na czas generowania
+            buttons.style.visibility = 'hidden';
+
+            html2canvas(element, {
+                scale: 2, // Wyższa jakość
+                useCORS: true,
+                backgroundColor: "#212529" // Tło zgodne z ciemnym motywem
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save("Wynik_Testu_<?php echo $id_wyniku; ?>.pdf");
+                
+                buttons.style.visibility = 'visible';
+            });
+        });
+    </script>
 </body>
 </html>
