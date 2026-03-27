@@ -1,13 +1,13 @@
 <?php
-// Konfiguracja Bazy Danych - Laboratorium 13
+// Konfiguracja Bazy Danych - Laboratorium 15 (CRM)
 require_once __DIR__ . '/../load_env.php';
 
-// Wczytuje .env z tego samego folderu co db_config.php
+// Wczytuje .env
 loadEnv(__DIR__ . '/.env');
 
 $host = $_ENV['DB_HOST'] ?? 'localhost';
-$db_name = 'pszczolk_z13'; 
-$db_user = 'pszczolk_z13';   
+$db_name = 'pszczolk_z15'; 
+$db_user = 'pszczolk_z15';   
 $db_pass = $_ENV['DB_PASS'] ?? '';
 
 try {
@@ -15,6 +15,6 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
-    die("Błąd połączenia Lab 13: " . $e->getMessage());
+    die("Błąd połączenia Lab 15: " . $e->getMessage());
 }
 ?>

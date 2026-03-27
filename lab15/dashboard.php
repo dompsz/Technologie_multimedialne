@@ -2,197 +2,252 @@
 session_start();
 require_once 'db_config.php';
 
-if (!isset($_SESSION['lab13_user_id'])) {
+if (!isset($_SESSION['lab15_user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$user_id = $_SESSION['lab13_user_id'];
-$user_login = $_SESSION['lab13_login'];
-$is_admin = ($user_login === 'admin');
+$user_id = $_SESSION['lab15_user_id'];
+$username = $_SESSION['lab15_username'];
+$role = $_SESSION['lab15_role'];
 
-// Funkcja do płynnego przejścia kolorów (0% czerwony -> 100% zielony)
-function getFluidProgressColor($percent) {
-    // Red: 255 -> 0, Green: 0 -> 255
-    $r = floor(255 * (1 - $percent / 100));
-    $g = floor(255 * ($percent / 100));
-    $b = 0;
-    return "rgb($r, $g, $b)";
+// Obsługa POST dla Klienta (Nowe zgłoszenie)
+if ($role === 'client' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_post'])) {
+    $idz = $_POST['idz'];
+    $tresc = trim($_POST['tresc']);
+    $priorytet = (int)$_POST['priorytet'];
+
+    if (!empty($tresc)) {
+        $stmt = $conn->prepare("INSERT INTO posty (idz, idk, tresc, priorytet, stan) VALUES (?, ?, ?, ?, 0)");
+        $stmt->execute([$idz, $user_id, $tresc, $priorytet]);
+        header("Location: dashboard.php?msg=dodano");
+        exit();
+    }
 }
 
-// 1. Pobranie zadań (Manager)
-// Jeśli ADMIN - widzi WSZYSTKIE zadania. Jeśli pracownik - tylko swoje.
-$sql_managed = "
-    SELECT z.*, pr.login as manager_login,
-           (SELECT AVG(stan) FROM podzadanie WHERE idz = z.idz) as srednia_postepu,
-           (SELECT COUNT(*) FROM podzadanie WHERE idz = z.idz) as liczba_podzadan
-    FROM zadanie z
-    JOIN pracownik pr ON z.idp = pr.idp
-";
+// Pobieranie danych w zależności od roli
+if ($role === 'client') {
+    // Widok dla Klienta - własne posty
+    $stmt = $conn->prepare("
+        SELECT p.*, z.nazwa as kategoria, 
+        (SELECT COUNT(*) FROM odpowiedzi o WHERE o.idpo = p.idpo) as liczba_odpowiedzi
+        FROM posty p 
+        JOIN zagadnienia z ON p.idz = z.idz 
+        WHERE p.idk = ? 
+        ORDER BY p.datagodzina DESC
+    ");
+    $stmt->execute([$user_id]);
+    $user_posts = $stmt->fetchAll();
 
-if (!$is_admin) {
-    $sql_managed .= " WHERE z.idp = ?";
-    $stmt_managed = $conn->prepare($sql_managed);
-    $stmt_managed->execute([$user_id]);
+    // Kategorie do formularza
+    $stmt_z = $conn->query("SELECT * FROM zagadnienia");
+    $zagadnienia = $stmt_z->fetchAll();
 } else {
-    $stmt_managed = $conn->query($sql_managed);
+    // Widok dla Pracownika/Admina - wszystkie posty
+    // Opcjonalne filtrowanie
+    $where = "1=1";
+    $params = [];
+    if (isset($_GET['filter_cat']) && $_GET['filter_cat'] != '') {
+        $where .= " AND p.idz = ?";
+        $params[] = $_GET['filter_cat'];
+    }
+    if (isset($_GET['filter_stan']) && $_GET['filter_stan'] != '') {
+        $where .= " AND p.stan = ?";
+        $params[] = $_GET['filter_stan'];
+    }
+
+    $stmt = $conn->prepare("
+        SELECT p.*, z.nazwa as kategoria, k.nazwisko as klient_nazwisko 
+        FROM posty p 
+        JOIN zagadnienia z ON p.idz = z.idz 
+        JOIN klienci k ON p.idk = k.idk 
+        WHERE $where
+        ORDER BY p.priorytet DESC, p.datagodzina ASC
+    ");
+    $stmt->execute($params);
+    $all_posts = $stmt->fetchAll();
+
+    $stmt_z = $conn->query("SELECT * FROM zagadnienia");
+    $zagadnienia = $stmt_z->fetchAll();
 }
-$managed_tasks = $stmt_managed->fetchAll();
 
-// 2. Pobranie podzadań (Wykonawca)
-$stmt_assigned = $conn->prepare("
-    SELECT p.*, z.nazwa_zadania, pr.login as manager_login
-    FROM podzadanie p
-    JOIN zadanie z ON p.idz = z.idz
-    JOIN pracownik pr ON z.idp = pr.idp
-    WHERE p.idp = ?
-");
-$stmt_assigned->execute([$user_id]);
-$assigned_subtasks = $stmt_assigned->fetchAll();
+function getStanLabel($stan) {
+    switch ($stan) {
+        case 0: return '<span class="badge bg-danger">Oczekujący</span>';
+        case 1: return '<span class="badge bg-warning text-dark">W trakcie</span>';
+        case 2: return '<span class="badge bg-success">Zakończony</span>';
+        default: return 'Nieznany';
+    }
+}
 
-// 3. Pobranie listy wszystkich pracowników (do przypisywania)
-$stmt_workers = $conn->query("SELECT idp, login FROM pracownik ORDER BY login");
-$all_workers = $stmt_workers->fetchAll();
+function getPriorityColor($priority) {
+    if ($priority >= 4) return 'border-danger';
+    if ($priority == 3) return 'border-warning';
+    return 'border-info';
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Lab 13</title>
+    <title>Dashboard CRM - Lab 15</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        .task-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .subtask-item { border-left: 3px solid #444; padding-left: 10px; margin-bottom: 10px; }
-        .admin-badge { background: #ffc107; color: #000; font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
-        input[type=range] { width: 100%; cursor: pointer; }
+        .sidebar { background: var(--card-bg); border-right: 1px solid var(--border-color); min-height: calc(100vh - 56px); }
+        .post-card { background: var(--card-bg); border-left: 5px solid; transition: transform 0.2s; }
+        .post-card:hover { transform: scale(1.01); }
+        .nav-link { color: #ccc; }
+        .nav-link:hover, .nav-link.active { color: var(--accent-color); }
+        .btn-accent { background: var(--accent-color); color: #000; font-weight: bold; }
+        .btn-accent:hover { background: var(--accent-hover); }
     </style>
 </head>
 <body class="bg-dark text-light">
-
-<nav class="navbar navbar-dark bg-black border-bottom border-secondary px-4">
-    <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">System Todo - Lab 13</span>
-        <div class="d-flex align-items-center">
-            <span class="me-3">Witaj, <strong><?php echo htmlspecialchars($user_login); ?></strong></span>
-            <?php if($is_admin): ?>
-                <a href="admin.php" class="btn btn-sm btn-warning me-2">LOGI I RAPORTY</a>
-            <?php endif; ?>
-            <a href="logout.php" class="btn btn-sm btn-outline-danger">Wyloguj</a>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">CRM System 🏢</a>
+            <div class="d-flex align-items-center">
+                <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($username); ?></strong> (<?php echo $role; ?>)</span>
+                <?php if ($role === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">Panel Administratora</a>
+                <?php endif; ?>
+                <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<div class="container mt-4">
-    <div class="row">
-        <!-- LEWA KOLUMNA: TWOJE PODZADANIA -->
-        <div class="col-md-6">
-            <h3 class="mb-4 text-accent">Twoje zadania (Wykonawca)</h3>
-            <?php if(empty($assigned_subtasks)): ?>
-                <p class="text-muted">Brak przypisanych podzadań.</p>
-            <?php else: ?>
-                <?php foreach($assigned_subtasks as $sub): ?>
-                    <div class="task-card">
-                        <h5 style="color: <?php echo getFluidProgressColor($sub['stan']); ?>">
-                            <?php echo htmlspecialchars($sub['nazwa_podzadania']); ?>
-                        </h5>
-                        <p class="small text-muted mb-2">Projekt: <?php echo htmlspecialchars($sub['nazwa_zadania']); ?> (Manager: <?php echo htmlspecialchars($sub['manager_login']); ?>)</p>
-                        
-                        <form action="update_subtask.php" method="POST" class="mt-3">
-                            <input type="hidden" name="idpz" value="<?php echo $sub['idpz']; ?>">
-                            <label class="form-label d-flex justify-content-between">
-                                Postęp: <span id="val-<?php echo $sub['idpz']; ?>"><?php echo $sub['stan']; ?>%</span>
-                            </label>
-                            <input type="range" class="form-range" name="stan" value="<?php echo $sub['stan']; ?>" 
-                                   min="0" max="100" 
-                                   oninput="document.getElementById('val-<?php echo $sub['idpz']; ?>').innerText = this.value + '%'">
-                            <button type="submit" class="btn btn-sm btn-primary mt-2">Zaktualizuj stan</button>
+    <div class="container mt-4">
+        <div class="row">
+            <?php if ($role === 'client'): ?>
+                <!-- WIDOK KLIENTA -->
+                <div class="col-md-4">
+                    <div class="card bg-dark text-light border-secondary p-4 mb-4">
+                        <h4>Nowe Zgłoszenie ➕</h4>
+                        <hr class="border-secondary">
+                        <form method="POST">
+                            <input type="hidden" name="add_post" value="1">
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary">Kategoria</label>
+                                <select name="idz" class="form-select bg-dark text-light border-secondary" required>
+                                    <?php foreach ($zagadnienia as $z): ?>
+                                        <option value="<?php echo $z['idz']; ?>"><?php echo htmlspecialchars($z['nazwa']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary">Priorytet (1-5)</label>
+                                <input type="range" name="priorytet" class="form-range" min="1" max="5" step="1" value="1" oninput="this.nextElementSibling.value = this.value">
+                                <output class="small">1</output>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary">Treść problemu</label>
+                                <textarea name="tresc" class="form-control bg-dark text-light border-secondary" rows="4" placeholder="Opisz swoje zgłoszenie..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-accent w-100">WYŚLIJ ZGŁOSZENIE</button>
                         </form>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- PRAWA KOLUMNA: ZARZĄDZANIE PROJEKTAMI -->
-        <div class="col-md-6">
-            <h3 class="mb-4 text-accent">
-                <?php echo $is_admin ? "Wszystkie Projekty (ADMIN)" : "Twoje projekty (Manager)"; ?>
-            </h3>
-            
-            <div class="task-card mb-4 border-info">
-                <h6>Utwórz nowe zadanie główne</h6>
-                <form action="add_task.php" method="POST" class="d-flex gap-2">
-                    <input type="text" name="nazwa_zadania" class="form-control form-control-sm bg-dark text-white" placeholder="Nazwa projektu..." required>
-                    <button type="submit" class="btn btn-sm btn-info">UTWÓRZ</button>
-                </form>
-            </div>
-
-            <?php if(empty($managed_tasks)): ?>
-                <p class="text-muted">Brak projektów.</p>
-            <?php else: ?>
-                <?php foreach($managed_tasks as $task): 
-                    $avg = $task['srednia_postepu'] !== null ? round($task['srednia_postepu']) : 0;
-                    $color = getFluidProgressColor($avg);
-                ?>
-                    <div class="task-card">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 style="color: <?php echo $color; ?>">
-                                <?php echo htmlspecialchars($task['nazwa_zadania']); ?>
-                                <?php if($is_admin): ?>
-                                    <span class="admin-badge">Mgr: <?php echo htmlspecialchars($task['manager_login']); ?></span>
-                                <?php endif; ?>
-                            </h5>
-                            <span class="badge" style="background: <?php echo $color; ?>; color: #000;"><?php echo $avg; ?>%</span>
-                        </div>
-                        
-                        <div class="mt-3 border-top border-secondary pt-2">
-                            <!-- Tylko manager zadania lub admin może dodawać podzadania -->
-                            <?php if($is_admin || $task['idp'] == $user_id): ?>
-                            <button class="btn btn-sm btn-outline-light mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#addSub-<?php echo $task['idz']; ?>">
-                                + Przypisz podzadanie
-                            </button>
-                            
-                            <div class="collapse mb-3" id="addSub-<?php echo $task['idz']; ?>">
-                                <form action="add_subtask.php" method="POST" class="card card-body bg-dark border-secondary p-2">
-                                    <input type="hidden" name="idz" value="<?php echo $task['idz']; ?>">
-                                    <input type="text" name="nazwa_podzadania" class="form-control form-control-sm mb-2 bg-dark text-white" placeholder="Nazwa podzadania..." required>
-                                    <select name="idp_wykonawca" class="form-select form-select-sm mb-2 bg-dark text-white">
-                                        <?php foreach($all_workers as $worker): ?>
-                                            <option value="<?php echo $worker['idp']; ?>"><?php echo htmlspecialchars($worker['login']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-success">DODAJ I PRZYPISZ</button>
-                                </form>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php
-                            $stmt_sub_list = $conn->prepare("
-                                SELECT p.*, pr.login as wykonawca 
-                                FROM podzadanie p 
-                                JOIN pracownik pr ON p.idp = pr.idp 
-                                WHERE p.idz = ?
-                            ");
-                            $stmt_sub_list->execute([$task['idz']]);
-                            $sub_list = $stmt_sub_list->fetchAll();
-                            
-                            foreach($sub_list as $sl): ?>
-                                <div class="subtask-item d-flex justify-content-between align-items-center small">
-                                    <span style="color: <?php echo getFluidProgressColor($sl['stan']); ?>">
-                                        <?php echo htmlspecialchars($sl['nazwa_podzadania']); ?> (Wykonawca: <?php echo htmlspecialchars($sl['wykonawca']); ?>)
-                                    </span>
-                                    <span><?php echo $sl['stan']; ?>%</span>
+                </div>
+                <div class="col-md-8">
+                    <h4 class="mb-4">Twoje Zgłoszenia 📋</h4>
+                    <?php if (empty($user_posts)): ?>
+                        <p class="text-muted">Nie masz jeszcze żadnych zgłoszeń.</p>
+                    <?php else: ?>
+                        <?php foreach ($user_posts as $p): ?>
+                            <div class="card post-card mb-3 <?php echo getPriorityColor($p['priorytet']); ?> p-3 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="mb-1">#<?php echo $p['idpo']; ?> [<?php echo htmlspecialchars($p['kategoria']); ?>]</h5>
+                                        <small class="text-secondary"><?php echo $p['datagodzina']; ?></small>
+                                    </div>
+                                    <div class="text-end">
+                                        <?php echo getStanLabel($p['stan']); ?>
+                                        <div class="small text-secondary mt-1">Priorytet: <?php echo $p['priorytet']; ?>/5</div>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
+                                <p class="mt-3 text-light"><?php echo nl2br(htmlspecialchars($p['tresc'])); ?></p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="badge bg-secondary"><?php echo $p['liczba_odpowiedzi']; ?> odpowiedzi</span>
+                                    <a href="view_ticket.php?id=<?php echo $p['idpo']; ?>" class="btn btn-sm btn-outline-info">Pokaż wątek & odpowiedz</a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+            <?php else: ?>
+                <!-- WIDOK PRACOWNIKA / ADMINA -->
+                <div class="col-md-3">
+                    <div class="card bg-dark text-light border-secondary p-3 mb-4">
+                        <h5>Filtrowanie 🔍</h5>
+                        <form method="GET">
+                            <div class="mb-3">
+                                <label class="small text-secondary">Kategoria</label>
+                                <select name="filter_cat" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                    <option value="">Wszystkie</option>
+                                    <?php foreach ($zagadnienia as $z): ?>
+                                        <option value="<?php echo $z['idz']; ?>" <?php echo (isset($_GET['filter_cat']) && $_GET['filter_cat'] == $z['idz']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($z['nazwa']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small text-secondary">Stan</label>
+                                <select name="filter_stan" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                    <option value="">Wszystkie</option>
+                                    <option value="0" <?php echo (isset($_GET['filter_stan']) && $_GET['filter_stan'] === '0') ? 'selected' : ''; ?>>Oczekujący</option>
+                                    <option value="1" <?php echo (isset($_GET['filter_stan']) && $_GET['filter_stan'] === '1') ? 'selected' : ''; ?>>W trakcie</option>
+                                    <option value="2" <?php echo (isset($_GET['filter_stan']) && $_GET['filter_stan'] === '2') ? 'selected' : ''; ?>>Zakończony</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-accent w-100">FILTRUJ</button>
+                            <a href="dashboard.php" class="btn btn-sm btn-link text-secondary w-100 mt-1">Wyczyść</a>
+                        </form>
                     </div>
-                <?php endforeach; ?>
+                </div>
+                <div class="col-md-9">
+                    <h4 class="mb-4">Zgłoszenia do Obsługi 🛠️</h4>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Priorytet</th>
+                                    <th>Klient</th>
+                                    <th>Kategoria</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                    <th>Akcja</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($all_posts as $p): ?>
+                                    <tr class="<?php echo $p['priorytet'] >= 5 ? 'table-danger' : ''; ?>">
+                                        <td>#<?php echo $p['idpo']; ?></td>
+                                        <td>
+                                            <span class="fw-bold <?php echo $p['priorytet'] >= 4 ? 'text-danger' : ($p['priorytet'] == 3 ? 'text-warning' : 'text-info'); ?>">
+                                                <?php echo $p['priorytet']; ?>/5
+                                            </span>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($p['klient_nazwisko']); ?></td>
+                                        <td><?php echo htmlspecialchars($p['kategoria']); ?></td>
+                                        <td class="small text-secondary"><?php echo $p['datagodzina']; ?></td>
+                                        <td><?php echo getStanLabel($p['stan']); ?></td>
+                                        <td>
+                                            <a href="view_ticket.php?id=<?php echo $p['idpo']; ?>" class="btn btn-sm btn-info text-dark">Obsługuj</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
