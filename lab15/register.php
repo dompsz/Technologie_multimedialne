@@ -8,47 +8,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nazwisko = trim($_POST['nazwisko']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
+    $role_type = $_POST['role_type'] ?? 'client'; // 'client' lub 'employee'
 
     if (empty($nazwisko) || empty($password)) {
         $error = "Wszystkie pola są wymagane.";
     } elseif ($password !== $confirm_password) {
         $error = "Hasła nie są identyczne.";
     } else {
-        // Sprawdzenie czy nazwisko zajęte
-        $stmt = $conn->prepare("SELECT idk FROM klienci WHERE nazwisko = ?");
-        $stmt->execute([$nazwisko]);
-        if ($stmt->fetch()) {
-            $error = "To nazwisko jest już zarejestrowane.";
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        
+        if ($role_type === 'client') {
+            // Rejestracja Klienta
+            $stmt = $conn->prepare("SELECT idk FROM klienci WHERE nazwisko = ?");
+            $stmt->execute([$nazwisko]);
+            if ($stmt->fetch()) {
+                $error = "To nazwisko klienta jest już zarejestrowane.";
+            } else {
+                $conn->beginTransaction();
+                try {
+                    $stmt = $conn->prepare("INSERT INTO klienci (nazwisko, haslo) VALUES (?, ?)");
+                    $stmt->execute([$nazwisko, $hashed_password]);
+                    $idk = $conn->lastInsertId();
+
+                    // Logowanie szczegółowe
+                    $ip = $_SERVER['REMOTE_ADDR'];
+                    $ua = $_SERVER['HTTP_USER_AGENT'];
+                    $os = "Nieznany";
+                    if (preg_match('/Windows/i', $ua)) $os = "Windows";
+                    elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
+                    elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
+
+                    $browser = "Nieznana";
+                    if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
+                    elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
+
+                    $stmt_log = $conn->prepare("INSERT INTO logi_klientow (idk, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
+                    $stmt_log->execute([$idk, $ip, $browser, $os]);
+
+                    $conn->commit();
+                    $success = "Konto klienta utworzone! Możesz się teraz zalogować.";
+                } catch (Exception $e) {
+                    $conn->rollBack();
+                    $error = "Błąd rejestracji klienta: " . $e->getMessage();
+                }
+            }
         } else {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
-            $conn->beginTransaction();
-            try {
-                $stmt = $conn->prepare("INSERT INTO klienci (nazwisko, haslo) VALUES (?, ?)");
-                $stmt->execute([$nazwisko, $hashed_password]);
-                $idk = $conn->lastInsertId();
-
-                // Logowanie szczegółowe dla klienta przy rejestracji
-                $ip = $_SERVER['REMOTE_ADDR'];
-                $ua = $_SERVER['HTTP_USER_AGENT'];
-                
-                $os = "Nieznany";
-                if (preg_match('/Windows/i', $ua)) $os = "Windows";
-                elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
-                elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
-
-                $browser = "Nieznana";
-                if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
-                elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
-
-                $stmt_log = $conn->prepare("INSERT INTO logi_klientow (idk, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
-                $stmt_log->execute([$idk, $ip, $browser, $os]);
-
-                $conn->commit();
-                $success = "Konto klienta utworzone! Możesz się teraz zalogować.";
-            } catch (Exception $e) {
-                $conn->rollBack();
-                $error = "Błąd rejestracji: " . $e->getMessage();
+            // Rejestracja Pracownika
+            $stmt = $conn->prepare("SELECT idp FROM pracownicy WHERE nazwisko = ?");
+            $stmt->execute([$nazwisko]);
+            if ($stmt->fetch()) {
+                $error = "To nazwisko pracownika jest już zajęte.";
+            } else {
+                try {
+                    // Pracownik domyślnie otrzymuje rolę 'pracownik'
+                    $stmt = $conn->prepare("INSERT INTO pracownicy (nazwisko, haslo, role) VALUES (?, ?, 'pracownik')");
+                    $stmt->execute([$nazwisko, $hashed_password]);
+                    $success = "Konto pracownika utworzone! Możesz się teraz zalogować.";
+                } catch (Exception $e) {
+                    $error = "Błąd rejestracji pracownika: " . $e->getMessage();
+                }
             }
         }
     }
@@ -58,14 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Rejestracja Klienta - System CRM</title>
+    <title>Rejestracja - System CRM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
         body { background: #121212; color: #eee; }
         .auth-container { max-width: 450px; margin: 80px auto; padding: 30px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); }
-        .form-control { background: #222; border: 1px solid #444; color: #fff; padding: 12px; }
-        .form-control:focus { background: #2a2a2a; border-color: var(--accent-color); color: #fff; box-shadow: none; }
+        .form-control, .form-select { background: #222; border: 1px solid #444; color: #fff; padding: 12px; }
+        .form-control:focus, .form-select:focus { background: #2a2a2a; border-color: var(--accent-color); color: #fff; box-shadow: none; }
         .btn-primary { background: var(--accent-color); border: none; color: #000; font-weight: bold; padding: 12px; }
         .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
         .error-msg { background: rgba(220, 53, 69, 0.1); color: #ff6b6b; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
@@ -79,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         
         <div class="auth-container shadow-lg">
-            <h2 class="text-center mb-4">Rejestracja Klienta</h2>
+            <h2 class="text-center mb-4">Rejestracja</h2>
             
             <?php if($error): ?>
                 <div class="error-msg"><?php echo $error; ?></div>
@@ -90,6 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Rola</label>
+                    <select name="role_type" class="form-select">
+                        <option value="client">Klient (Zgłaszający)</option>
+                        <option value="employee">Pracownik (Obsługa)</option>
+                    </select>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Nazwisko (Login)</label>
                     <input type="text" name="nazwisko" class="form-control" placeholder="Wpisz swoje nazwisko" required>
