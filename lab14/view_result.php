@@ -2,83 +2,73 @@
 session_start();
 require_once 'db_config.php';
 
-if (!isset($_SESSION['lab14_user_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: login.php");
+if (!isset($_SESSION['lab14_user_id']) || !isset($_GET['id'])) {
+    header("Location: index.php");
     exit();
 }
 
-$id_testu = $_POST['id_testu'];
+$id_wyniku = $_GET['id'];
 $user_id = $_SESSION['lab14_user_id'];
 
-// Pobierz wszystkie pytania dla tego testu
-$stmt_pytania = $conn->prepare("SELECT id_pytania, tresc_pytania FROM pytania WHERE id_testu = ?");
-$stmt_pytania->execute([$id_testu]);
-$pytania = $stmt_pytania->fetchAll();
+// Pobierz wynik i upewnij się, że należy do użytkownika (chyba że to admin/coach)
+$stmt_wynik = $conn->prepare("
+    SELECT w.*, t.nazwa_testu 
+    FROM wyniki w 
+    JOIN testy t ON w.id_testu = t.id_testu 
+    WHERE w.id_wyniku = ?
+");
+$stmt_wynik->execute([$id_wyniku]);
+$wynik = $stmt_wynik->fetch();
 
-$total_questions = count($pytania);
-$correct_answers_count = 0;
-$user_results = [];
-
-// Rozpocznij transakcję zapisu wyników
-$conn->beginTransaction();
-try {
-    // 1. Wstępny zapis wyniku (wynik procentowy zaktualizujemy na końcu)
-    $stmt_insert_wynik = $conn->prepare("INSERT INTO wyniki (id_uzytkownika, id_testu, wynik_procentowy) VALUES (?, ?, 0)");
-    $stmt_insert_wynik->execute([$user_id, $id_testu]);
-    $id_wyniku = $conn->lastInsertId();
-
-    foreach ($pytania as $p) {
-        $id_pytania = $p['id_pytania'];
-        $field_name = "pytanie_" . $id_pytania;
-        $id_odpowiedzi_uzytkownika = isset($_POST[$field_name]) ? $_POST[$field_name] : null;
-        
-        // Pobierz możliwe odpowiedzi dla pytania
-        $stmt_odp = $conn->prepare("SELECT id_odpowiedzi, tresc_odpowiedzi, czy_poprawna FROM odpowiedzi WHERE id_pytania = ?");
-        $stmt_odp->execute([$id_pytania]);
-        $odpowiedzi = $stmt_odp->fetchAll();
-        
-        $is_correct = false;
-        foreach ($odpowiedzi as $o) {
-            if ($id_odpowiedzi_uzytkownika == $o['id_odpowiedzi'] && $o['czy_poprawna'] == 1) {
-                $is_correct = true;
-                $correct_answers_count++;
-            }
-        }
-        
-        // Zapisz wybór użytkownika
-        $stmt_detail = $conn->prepare("INSERT INTO wyniki_szczegoly (id_wyniku, id_pytania, id_odpowiedzi) VALUES (?, ?, ?)");
-        $stmt_detail->execute([$id_wyniku, $id_pytania, $id_odpowiedzi_uzytkownika]);
-        
-        $user_results[] = [
-            'tresc_pytania' => $p['tresc_pytania'],
-            'odpowiedzi' => $odpowiedzi,
-            'id_wybranej' => $id_odpowiedzi_uzytkownika,
-            'czy_poprawna' => $is_correct
-        ];
-    }
-
-    // 2. Finalizacja wyniku procentowego
-    $wynik_procentowy = ($total_questions > 0) ? ($correct_answers_count / $total_questions) * 100 : 0;
-    $stmt_update = $conn->prepare("UPDATE wyniki SET wynik_procentowy = ? WHERE id_wyniku = ?");
-    $stmt_update->execute([$wynik_procentowy, $id_wyniku]);
-
-    $conn->commit();
-} catch (Exception $e) {
-    $conn->rollBack();
-    die("Błąd bazy danych: " . $e->getMessage());
+if (!$wynik || ($wynik['id_uzytkownika'] != $user_id && !in_array($_SESSION['lab14_role'], ['admin', 'coach']))) {
+    header("Location: index.php");
+    exit();
 }
 
-// Dane do wyświetlenia
-$stmt_test = $conn->prepare("SELECT nazwa_testu FROM testy WHERE id_testu = ?");
-$stmt_test->execute([$id_testu]);
-$test_info = $stmt_test->fetch();
+// Pobierz szczegóły wyników
+$stmt_details = $conn->prepare("
+    SELECT ws.id_pytania, ws.id_odpowiedzi, p.tresc_pytania 
+    FROM wyniki_szczegoly ws
+    JOIN pytania p ON ws.id_pytania = p.id_pytania
+    WHERE ws.id_wyniku = ?
+");
+$stmt_details->execute([$id_wyniku]);
+$details = $stmt_details->fetchAll();
+
+$user_results = [];
+$correct_count = 0;
+
+foreach ($details as $d) {
+    // Pobierz wszystkie odpowiedzi dla tego pytania
+    $stmt_odp = $conn->prepare("SELECT id_odpowiedzi, tresc_odpowiedzi, czy_poprawna FROM odpowiedzi WHERE id_pytania = ?");
+    $stmt_odp->execute([$d['id_pytania']]);
+    $odpowiedzi = $stmt_odp->fetchAll();
+    
+    $is_correct = false;
+    foreach ($odpowiedzi as $o) {
+        if ($d['id_odpowiedzi'] == $o['id_odpowiedzi'] && $o['czy_poprawna'] == 1) {
+            $is_correct = true;
+            $correct_count++;
+        }
+    }
+    
+    $user_results[] = [
+        'tresc_pytania' => $d['tresc_pytania'],
+        'odpowiedzi' => $odpowiedzi,
+        'id_wybranej' => $d['id_odpowiedzi'],
+        'czy_poprawna' => $is_correct
+    ];
+}
+
+$total_questions = count($user_results);
+$wynik_procentowy = $wynik['wynik_procentowy'];
 $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
 ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Podsumowanie Testu - <?php echo htmlspecialchars($test_info['nazwa_testu']); ?></title>
+    <title>Szczegóły Wyniku - <?php echo htmlspecialchars($wynik['nazwa_testu']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -122,9 +112,9 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
     <div class="container mt-5 mb-5">
         <div class="card p-4 shadow-lg">
             <div class="text-center mb-4">
-                <h2 class="mb-1">Podsumowanie Wyników 📝</h2>
-                <h4 class="text-secondary"><?php echo htmlspecialchars($test_info['nazwa_testu']); ?></h4>
-                <p class="mb-0">Użytkownik: <strong><?php echo htmlspecialchars($username); ?></strong> | Data: <?php echo date('d.m.Y H:i'); ?></p>
+                <h2 class="mb-1">Szczegóły Wyniku 📝</h2>
+                <h4 class="text-secondary"><?php echo htmlspecialchars($wynik['nazwa_testu']); ?></h4>
+                <p class="mb-0">Użytkownik: <strong><?php echo htmlspecialchars($username); ?></strong> | Data: <?php echo $wynik['data_zakonczenia']; ?></p>
             </div>
 
             <hr class="border-secondary mb-4">
@@ -134,14 +124,13 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
                     <div class="display-2 fw-bold <?php echo $wynik_procentowy >= 50 ? 'text-success' : 'text-danger'; ?>">
                         <?php echo round($wynik_procentowy); ?>%
                     </div>
-                    <p class="lead">Twój wynik końcowy</p>
+                    <p class="lead">Wynik końcowy</p>
                 </div>
                 <div class="col-md-6">
                     <div class="alert <?php echo $wynik_procentowy >= 50 ? 'alert-success bg-dark border-success text-success' : 'alert-danger bg-dark border-danger text-danger'; ?>">
-                        <h5 class="alert-heading"><?php echo $wynik_procentowy >= 50 ? 'Gratulacje! 🎉' : 'Niestety... 😕'; ?></h5>
+                        <h5 class="alert-heading"><?php echo $wynik_procentowy >= 50 ? 'Zaliczono! 🎉' : 'Niezaliczono... 😕'; ?></h5>
                         <p class="mb-0">
-                            Poprawne odpowiedzi: <strong><?php echo $correct_answers_count; ?></strong> z <strong><?php echo $total_questions; ?></strong>.<br>
-                            Status: <strong><?php echo $wynik_procentowy >= 50 ? 'ZALICZONE' : 'NIEZALICZONE'; ?></strong>
+                            Poprawne odpowiedzi: <strong><?php echo $correct_count; ?></strong> z <strong><?php echo $total_questions; ?></strong>.
                         </p>
                     </div>
                 </div>
@@ -183,7 +172,5 @@ $username = $_SESSION['lab14_username'] ?? 'Użytkownik';
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -100,7 +100,7 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
                 <?php else: ?>
                     <div class="list-group">
                         <?php foreach ($moje_wyniki as $w): ?>
-                            <div class="list-group-item bg-dark text-light border-secondary">
+                            <a href="view_result.php?id=<?php echo $w['id_wyniku']; ?>" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
                                 <div class="d-flex justify-content-between">
                                     <h6 class="mb-1"><?php echo htmlspecialchars($w['nazwa_testu']); ?></h6>
                                     <span class="badge <?php echo $w['wynik_procentowy'] >= 50 ? 'bg-success' : 'bg-danger'; ?>">
@@ -108,7 +108,10 @@ $moje_wyniki = $stmt_wyniki->fetchAll();
                                     </span>
                                 </div>
                                 <small class="text-muted"><?php echo $w['data_zakonczenia']; ?></small>
-                            </div>
+                                <div class="text-end">
+                                    <small class="text-info">👁️ Szczegóły</small>
+                                </div>
+                            </a>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>

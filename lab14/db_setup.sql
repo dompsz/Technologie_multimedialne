@@ -53,6 +53,18 @@ CREATE TABLE IF NOT EXISTS `wyniki` (
   CONSTRAINT `fk_wyniki_testy` FOREIGN KEY (`id_testu`) REFERENCES `testy` (`id_testu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 6. Tabela Szczegółów Wyników (Odpowiedzi użytkownika)
+CREATE TABLE IF NOT EXISTS `wyniki_szczegoly` (
+  `id_szczegolu` int(11) NOT NULL AUTO_INCREMENT,
+  `id_wyniku` int(11) NOT NULL,
+  `id_pytania` int(11) NOT NULL,
+  `id_odpowiedzi` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_szczegolu`),
+  CONSTRAINT `fk_szczegoly_wyniki` FOREIGN KEY (`id_wyniku`) REFERENCES `wyniki` (`id_wyniku`) ON DELETE CASCADE,
+  CONSTRAINT `fk_szczegoly_pytania` FOREIGN KEY (`id_pytania`) REFERENCES `pytania` (`id_pytania`) ON DELETE CASCADE,
+  CONSTRAINT `fk_szczegoly_odpowiedzi` FOREIGN KEY (`id_odpowiedzi`) REFERENCES `odpowiedzi` (`id_odpowiedzi`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- SEEDOWANIE DANYCH (UPSERT - Naprawia nazwy i treści bez kasowania wyników)
 
 -- 1. KONTA (Admin i Coach)

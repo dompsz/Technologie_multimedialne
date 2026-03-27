@@ -129,9 +129,12 @@ $test_stats = $stmt_stats->fetchAll();
                                                 <?php foreach(array_slice($u_results, 0, 3) as $ur): ?>
                                                     <div class="small">
                                                         <?php echo htmlspecialchars($ur['nazwa_testu']); ?>: 
-                                                        <span class="<?php echo $ur['wynik_procentowy'] >= 50 ? 'status-passed' : 'status-failed'; ?>">
-                                                            <?php echo round($ur['wynik_procentowy']); ?>%
-                                                        </span>
+                                                        <a href="view_result.php?id=<?php echo $ur['id_wyniku']; ?>" class="text-decoration-none">
+                                                            <span class="<?php echo $ur['wynik_procentowy'] >= 50 ? 'status-passed' : 'status-failed'; ?>">
+                                                                <?php echo round($ur['wynik_procentowy']); ?>%
+                                                            </span>
+                                                            <small class="text-info">👁️</small>
+                                                        </a>
                                                     </div>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
