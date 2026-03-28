@@ -4,91 +4,86 @@ require_once 'db_config.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $login_type = $_POST['login_type'] ?? 'client'; // 'client' lub 'employee'
+    $login_type = $_POST['login_type'] ?? 'client';
     $nazwisko = trim($_POST['nazwisko']);
     $password = $_POST['password'];
 
     if (empty($nazwisko) || empty($password)) {
         $error = "Wypełnij wszystkie pola.";
     } else {
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $ua = $_SERVER['HTTP_USER_AGENT'];
+        
+        $os = "Nieznany";
+        if (preg_match('/Windows/i', $ua)) $os = "Windows";
+        elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
+        elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
+        elseif (preg_match('/Android/i', $ua)) $os = "Android";
+        elseif (preg_match('/iPhone|iPad/i', $ua)) $os = "iOS";
+
+        $browser = "Nieznana";
+        if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
+        elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
+        elseif (preg_match('/Safari/i', $ua)) $browser = "Safari";
+        elseif (preg_match('/Edge/i', $ua)) $browser = "Edge";
+
         if ($login_type === 'client') {
-            // Logowanie Klienta
-            $stmt = $conn->prepare("SELECT idk, nazwisko, haslo FROM klienci WHERE nazwisko = ?");
-            $stmt->execute([$nazwisko]);
-            $user = $stmt->fetch();
-
-            if ($user && password_verify($password, $user['haslo'])) {
-                $_SESSION['lab15_user_id'] = $user['idk'];
-                $_SESSION['lab15_username'] = $user['nazwisko'];
-                $_SESSION['lab15_role'] = 'client';
-
-                // Logowanie szczegółowe dla klienta
-                $ip = $_SERVER['REMOTE_ADDR'];
-                $ua = $_SERVER['HTTP_USER_AGENT'];
-                
-                // Prosta ekstrakcja systemu/przeglądarki (można rozbudować)
-                $os = "Nieznany";
-                if (preg_match('/Windows/i', $ua)) $os = "Windows";
-                elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
-                elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
-                elseif (preg_match('/Android/i', $ua)) $os = "Android";
-                elseif (preg_match('/iPhone|iPad/i', $ua)) $os = "iOS";
-
-                $browser = "Nieznana";
-                if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
-                elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
-                elseif (preg_match('/Safari/i', $ua)) $browser = "Safari";
-                elseif (preg_match('/Edge/i', $ua)) $browser = "Edge";
-
-                $stmt_log = $conn->prepare("INSERT INTO logi_klientow (idk, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
-                $stmt_log->execute([$user['idk'], $ip, $browser, $os]);
-
-                header("Location: dashboard.php");
-                exit();
+            // --- OCHRONA BRUTE-FORCE KLIENT ---
+            $stmt_bf = $conn->prepare("SELECT stan FROM logi_klientow WHERE login_attempted = ? ORDER BY datagodzina DESC LIMIT 3");
+            $stmt_bf->execute([$nazwisko]);
+            $attempts = $stmt_bf->fetchAll(PDO::FETCH_COLUMN);
+            if (count($attempts) === 3 && array_sum($attempts) === 0) {
+                $error = "Konto klienta zablokowane (3 nieudane próby). Skontaktuj się z administratorem.";
             } else {
-                $error = "Błędne nazwisko lub hasło klienta.";
+                $stmt = $conn->prepare("SELECT idk, nazwisko, haslo FROM klienci WHERE nazwisko = ?");
+                $stmt->execute([$nazwisko]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['haslo'])) {
+                    $_SESSION['lab15_user_id'] = $user['idk'];
+                    $_SESSION['lab15_username'] = $user['nazwisko'];
+                    $_SESSION['lab15_role'] = 'client';
+
+                    $stmt_log = $conn->prepare("INSERT INTO logi_klientow (idk, login_attempted, ip_address, przegladarka, system, stan) VALUES (?, ?, ?, ?, ?, 1)");
+                    $stmt_log->execute([$user['idk'], $nazwisko, $ip, $browser, $os]);
+
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error = "Błędne nazwisko lub hasło klienta.";
+                    $idk = $user ? $user['idk'] : null;
+                    $stmt_log = $conn->prepare("INSERT INTO logi_klientow (idk, login_attempted, ip_address, przegladarka, system, stan) VALUES (?, ?, ?, ?, ?, 0)");
+                    $stmt_log->execute([$idk, $nazwisko, $ip, $browser, $os]);
+                }
             }
         } else {
-            // Logowanie Pracownika / Admina
-            $stmt = $conn->prepare("SELECT idp, nazwisko, haslo, role FROM pracownicy WHERE nazwisko = ?");
-            $stmt->execute([$nazwisko]);
-            $user = $stmt->fetch();
-
-            if ($user && password_verify($password, $user['haslo'])) {
-                $_SESSION['lab15_user_id'] = $user['idp'];
-                $_SESSION['lab15_username'] = $user['nazwisko'];
-                $_SESSION['lab15_role'] = $user['role'];
-
-                // Logowanie szczegółowe dla pracownika
-                $ip = $_SERVER['REMOTE_ADDR'];
-                $ua = $_SERVER['HTTP_USER_AGENT'];
-                
-                $os = "Nieznany";
-                if (preg_match('/Windows/i', $ua)) $os = "Windows";
-                elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
-                elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
-                elseif (preg_match('/Android/i', $ua)) $os = "Android";
-                elseif (preg_match('/iPhone|iPad/i', $ua)) $os = "iOS";
-
-                $browser = "Nieznana";
-                if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
-                elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
-                elseif (preg_match('/Safari/i', $ua)) $browser = "Safari";
-                elseif (preg_match('/Edge/i', $ua)) $browser = "Edge";
-
-                try {
-                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
-                    $stmt_log->execute([$user['idp'], $ip, $browser, $os]);
-                } catch (PDOException $e) {
-                    // Fallback dla starszej wersji bazy (brak nowych kolumn)
-                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp) VALUES (?)");
-                    $stmt_log->execute([$user['idp']]);
-                }
-
-                header("Location: dashboard.php");
-                exit();
+            // --- OCHRONA BRUTE-FORCE PRACOWNIK ---
+            $stmt_bf = $conn->prepare("SELECT stan FROM logi_pracownikow WHERE login_attempted = ? ORDER BY datagodzina DESC LIMIT 3");
+            $stmt_bf->execute([$nazwisko]);
+            $attempts = $stmt_bf->fetchAll(PDO::FETCH_COLUMN);
+            if (count($attempts) === 3 && array_sum($attempts) === 0) {
+                $error = "Konto pracownika zablokowane (3 nieudane próby). Skontaktuj się z administratorem.";
             } else {
-                $error = "Błędne nazwisko lub hasło pracownika.";
+                $stmt = $conn->prepare("SELECT idp, nazwisko, haslo, role FROM pracownicy WHERE nazwisko = ?");
+                $stmt->execute([$nazwisko]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['haslo'])) {
+                    $_SESSION['lab15_user_id'] = $user['idp'];
+                    $_SESSION['lab15_username'] = $user['nazwisko'];
+                    $_SESSION['lab15_role'] = $user['role'];
+
+                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, login_attempted, ip_address, przegladarka, system, stan) VALUES (?, ?, ?, ?, ?, 1)");
+                    $stmt_log->execute([$user['idp'], $nazwisko, $ip, $browser, $os]);
+
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $error = "Błędne nazwisko lub hasło pracownika.";
+                    $idp = $user ? $user['idp'] : null;
+                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, login_attempted, ip_address, przegladarka, system, stan) VALUES (?, ?, ?, ?, ?, 0)");
+                    $stmt_log->execute([$idp, $nazwisko, $ip, $browser, $os]);
+                }
             }
         }
     }

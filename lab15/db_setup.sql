@@ -23,11 +23,13 @@ CREATE TABLE IF NOT EXISTS `klienci` (
 -- 3. Tabela Logi Pracowników
 CREATE TABLE IF NOT EXISTS `logi_pracownikow` (
   `idlp` int(11) NOT NULL AUTO_INCREMENT,
-  `idp` int(11) NOT NULL,
+  `idp` int(11) DEFAULT NULL,
+  `login_attempted` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `datagodzina` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `przegladarka` text COLLATE utf8mb4_unicode_ci,
   `system` text COLLATE utf8mb4_unicode_ci,
+  `stan` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1-sukces, 0-porażka',
   PRIMARY KEY (`idlp`),
   CONSTRAINT `fk_logi_p_pracownicy` FOREIGN KEY (`idp`) REFERENCES `pracownicy` (`idp`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -35,11 +37,13 @@ CREATE TABLE IF NOT EXISTS `logi_pracownikow` (
 -- 4. Tabela Logi Klientów
 CREATE TABLE IF NOT EXISTS `logi_klientow` (
   `idlk` int(11) NOT NULL AUTO_INCREMENT,
-  `idk` int(11) NOT NULL,
+  `idk` int(11) DEFAULT NULL,
+  `login_attempted` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `datagodzina` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
   `przegladarka` text COLLATE utf8mb4_unicode_ci,
   `system` text COLLATE utf8mb4_unicode_ci,
+  `stan` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1-sukces, 0-porażka',
   PRIMARY KEY (`idlk`),
   CONSTRAINT `fk_logi_k_klienci` FOREIGN KEY (`idk`) REFERENCES `klienci` (`idk`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
