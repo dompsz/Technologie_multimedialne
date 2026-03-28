@@ -59,9 +59,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['lab15_username'] = $user['nazwisko'];
                 $_SESSION['lab15_role'] = $user['role'];
 
-                // Logowanie dla pracownika
-                $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp) VALUES (?)");
-                $stmt_log->execute([$user['idp']]);
+                // Logowanie szczegółowe dla pracownika
+                $ip = $_SERVER['REMOTE_ADDR'];
+                $ua = $_SERVER['HTTP_USER_AGENT'];
+                
+                $os = "Nieznany";
+                if (preg_match('/Windows/i', $ua)) $os = "Windows";
+                elseif (preg_match('/Macintosh|Mac OS X/i', $ua)) $os = "macOS";
+                elseif (preg_match('/Linux/i', $ua)) $os = "Linux";
+                elseif (preg_match('/Android/i', $ua)) $os = "Android";
+                elseif (preg_match('/iPhone|iPad/i', $ua)) $os = "iOS";
+
+                $browser = "Nieznana";
+                if (preg_match('/Chrome/i', $ua)) $browser = "Chrome";
+                elseif (preg_match('/Firefox/i', $ua)) $browser = "Firefox";
+                elseif (preg_match('/Safari/i', $ua)) $browser = "Safari";
+                elseif (preg_match('/Edge/i', $ua)) $browser = "Edge";
+
+                $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
+                $stmt_log->execute([$user['idp'], $ip, $browser, $os]);
 
                 header("Location: dashboard.php");
                 exit();

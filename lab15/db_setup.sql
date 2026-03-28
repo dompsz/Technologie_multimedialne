@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS `logi_pracownikow` (
   `idlp` int(11) NOT NULL AUTO_INCREMENT,
   `idp` int(11) NOT NULL,
   `datagodzina` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `przegladarka` text COLLATE utf8mb4_unicode_ci,
+  `system` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`idlp`),
   CONSTRAINT `fk_logi_p_pracownicy` FOREIGN KEY (`idp`) REFERENCES `pracownicy` (`idp`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

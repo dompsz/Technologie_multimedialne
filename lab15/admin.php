@@ -146,11 +146,13 @@ $logi_p = $stmt_log_p->fetchAll();
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 400px;">
-                            <table class="table table-dark table-sm table-hover mb-0">
+                            <table class="table table-dark table-sm table-hover mb-0" style="font-size: 0.85rem;">
                                 <thead>
                                     <tr>
                                         <th>Data</th>
                                         <th>Pracownik</th>
+                                        <th>IP</th>
+                                        <th>System/Browser</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -158,6 +160,8 @@ $logi_p = $stmt_log_p->fetchAll();
                                         <tr>
                                             <td class="text-secondary small"><?php echo $l['datagodzina']; ?></td>
                                             <td><?php echo htmlspecialchars($l['nazwisko']); ?></td>
+                                            <td><?php echo $l['ip_address'] ?: '---'; ?></td>
+                                            <td class="small"><?php echo ($l['system'] ?: 'Nieznany') . ' / ' . ($l['przegladarka'] ?: 'Nieznana'); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

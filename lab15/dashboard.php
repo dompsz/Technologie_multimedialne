@@ -110,6 +110,9 @@ function getPriorityColor($priority) {
             <a class="navbar-brand fw-bold" href="#">CRM System 🏢</a>
             <div class="d-flex align-items-center">
                 <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($username); ?></strong> (<?php echo $role; ?>)</span>
+                <?php if ($role !== 'client'): ?>
+                    <a href="history.php" class="btn btn-outline-info btn-sm me-2">Moja Historia</a>
+                <?php endif; ?>
                 <?php if ($role === 'admin'): ?>
                     <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">Panel Administratora</a>
                 <?php endif; ?>
