@@ -76,8 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 elseif (preg_match('/Safari/i', $ua)) $browser = "Safari";
                 elseif (preg_match('/Edge/i', $ua)) $browser = "Edge";
 
-                $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
-                $stmt_log->execute([$user['idp'], $ip, $browser, $os]);
+                try {
+                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp, ip_address, przegladarka, system) VALUES (?, ?, ?, ?)");
+                    $stmt_log->execute([$user['idp'], $ip, $browser, $os]);
+                } catch (PDOException $e) {
+                    // Fallback dla starszej wersji bazy (brak nowych kolumn)
+                    $stmt_log = $conn->prepare("INSERT INTO logi_pracownikow (idp) VALUES (?)");
+                    $stmt_log->execute([$user['idp']]);
+                }
 
                 header("Location: dashboard.php");
                 exit();
