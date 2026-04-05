@@ -6,12 +6,10 @@ CREATE TABLE IF NOT EXISTS `uzytkownicy` (
   `idu` int(11) NOT NULL AUTO_INCREMENT,
   `nazwa_uzytkownika` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `haslo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `rola` ENUM('redaktor', 'admin') DEFAULT 'redaktor',
   `data_utworzenia` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idu`),
-  UNIQUE KEY `nazwa_uzytkownika` (`nazwa_uzytkownika`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `nazwa_uzytkownika` (`nazwa_uzytkownika`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Tabela Kategorie
@@ -64,11 +62,10 @@ INSERT INTO `kategorie` (`nazwa`, `slug`) VALUES
 ON DUPLICATE KEY UPDATE nazwa=VALUES(nazwa);
 
 -- Konta testowe (hasła: admin, redaktor)
--- admin: $2y$10$89v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy9v8Zun58y9ZBy (to nie jest poprawne hasło, uzyje standardowego z lab15 dla 'admin')
 -- Hasła standardowe: admin -> admin, redaktor -> redaktor
-INSERT INTO `uzytkownicy` (`idu`, `nazwa_uzytkownika`, `haslo`, `email`, `rola`) VALUES 
-(1, 'admin', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'admin@example.com', 'admin'),
-(2, 'redaktor1', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'redaktor@example.com', 'redaktor')
+INSERT INTO `uzytkownicy` (`idu`, `nazwa_uzytkownika`, `haslo`, `rola`) VALUES 
+(1, 'admin', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'admin'),
+(2, 'redaktor1', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'redaktor')
 ON DUPLICATE KEY UPDATE rola=VALUES(rola);
 
 -- Przykładowa podstrona

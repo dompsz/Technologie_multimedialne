@@ -21,7 +21,7 @@ if(isset($_POST['add_category'])) {
 $categories = $conn->query("SELECT * FROM kategorie ORDER BY nazwa ASC")->fetchAll();
 
 // Pobranie użytkowników
-$users = $conn->query("SELECT idu, nazwa_uzytkownika, email, rola, data_utworzenia FROM uzytkownicy ORDER BY data_utworzenia DESC")->fetchAll();
+$users = $conn->query("SELECT idu, nazwa_uzytkownika, rola, data_utworzenia FROM uzytkownicy ORDER BY data_utworzenia DESC")->fetchAll();
 
 // Pobranie logów
 $logs = $conn->query("SELECT l.*, u.nazwa_uzytkownika FROM logi_logowania l LEFT JOIN uzytkownicy u ON l.idu = u.idu ORDER BY l.datagodzina DESC LIMIT 20")->fetchAll();
@@ -78,7 +78,6 @@ $logs = $conn->query("SELECT l.*, u.nazwa_uzytkownika FROM logi_logowania l LEFT
                             <tr>
                                 <th>ID</th>
                                 <th>Użytkownik</th>
-                                <th>Email</th>
                                 <th>Rola</th>
                                 <th>Data</th>
                             </tr>
@@ -88,7 +87,6 @@ $logs = $conn->query("SELECT l.*, u.nazwa_uzytkownika FROM logi_logowania l LEFT
                             <tr>
                                 <td><?php echo $u['idu']; ?></td>
                                 <td><?php echo htmlspecialchars($u['nazwa_uzytkownika']); ?></td>
-                                <td><?php echo htmlspecialchars($u['email']); ?></td>
                                 <td><span class="badge <?php echo $u['rola'] === 'admin' ? 'bg-danger' : 'bg-primary'; ?>"><?php echo $u['rola']; ?></span></td>
                                 <td><?php echo $u['data_utworzenia']; ?></td>
                             </tr>

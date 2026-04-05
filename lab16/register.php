@@ -6,25 +6,22 @@ $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    if (empty($username) || empty($email) || empty($password)) {
+    if (empty($username) || empty($password)) {
         $error = "Wszystkie pola są wymagane.";
     } elseif ($password !== $confirm_password) {
         $error = "Hasła nie są identyczne.";
-    } elseif (strlen($password) < 6) {
-        $error = "Hasło musi mieć co najmniej 6 znaków.";
     } else {
-        $stmt = $conn->prepare("SELECT idu FROM uzytkownicy WHERE nazwa_uzytkownika = ? OR email = ?");
-        $stmt->execute([$username, $email]);
+        $stmt = $conn->prepare("SELECT idu FROM uzytkownicy WHERE nazwa_uzytkownika = ?");
+        $stmt->execute([$username]);
         if ($stmt->fetch()) {
-            $error = "Nazwa użytkownika lub email jest już zajęty.";
+            $error = "Nazwa użytkownika jest już zajęta.";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO uzytkownicy (nazwa_uzytkownika, email, haslo, rola) VALUES (?, ?, ?, 'redaktor')");
-            if ($stmt->execute([$username, $email, $hashed_password])) {
+            $stmt = $conn->prepare("INSERT INTO uzytkownicy (nazwa_uzytkownika, haslo, rola) VALUES (?, ?, 'redaktor')");
+            if ($stmt->execute([$username, $hashed_password])) {
                 $success = "Konto zostało utworzone. Możesz się teraz zalogować.";
             } else {
                 $error = "Wystąpił błąd podczas rejestracji.";
@@ -69,10 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="mb-3">
                     <label class="form-label">Nazwa użytkownika</label>
                     <input type="text" name="username" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Hasło</label>
