@@ -97,6 +97,11 @@
                 <h2>Zadanie 15</h2>
                 <p>System CRM</p>
             </a>
+            <a href="lab16/index.php" class="tile">
+                <div class="lab-icon">📰</div>
+                <h2>Zadanie 16</h2>
+                <p>System CMS</p>
+            </a>
         </div>
     </div>
 </body>
