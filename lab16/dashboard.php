@@ -50,9 +50,9 @@ $pages = $stmt->fetchAll();
         <div class="container-fluid">
             <a class="navbar-brand" href="index.php">CMS Lab 16</a>
             <div class="d-flex align-items-center">
-                <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($username); ?></strong> (<?php echo $role; ?>)</span>
-                <?php if ($role === 'admin'): ?>
-                    <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Administratora</a>
+                <span class="text-secondary me-3">Użytkownik: <strong><?php echo htmlspecialchars($username); ?></strong> | Uprawnienia: <span class="badge bg-info text-dark"><?php echo htmlspecialchars($role); ?></span></span>
+                <?php if ($role === 'admin' || $username === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-warning btn-sm me-2 fw-bold text-dark">🛡️ PANEL ADMINA</a>
                 <?php endif; ?>
                 <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
             </div>
