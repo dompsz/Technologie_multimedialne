@@ -7,7 +7,16 @@ if(!isset($_SESSION['lab16_user_id']) || $_SESSION['lab16_role'] !== 'admin') {
     exit();
 }
 
-// Obsługa dodawania kategorii
+// --- OBSŁUGA AKCJI ---
+
+// 1. Odblokowywanie kont (Brute-Force)
+if (isset($_POST['unblock_user'])) {
+    $login = $_POST['unblock_user'];
+    $stmt = $conn->prepare("DELETE FROM logi_logowania WHERE login_attempted = ? AND stan = 0");
+    $stmt->execute([$login]);
+}
+
+// 2. Zarządzanie Kategoriami
 if(isset($_POST['add_category'])) {
     $nazwa = trim($_POST['cat_name']);
     $slug = strtolower(str_replace(' ', '-', $nazwa));
@@ -17,7 +26,7 @@ if(isset($_POST['add_category'])) {
     }
 }
 
-// Obsługa dodawania do słownika bota
+// 3. Zarządzanie Słownikiem Bota
 if(isset($_POST['add_dict'])) {
     $klucz = trim($_POST['dict_key']);
     $odp = trim($_POST['dict_val']);
@@ -27,93 +36,103 @@ if(isset($_POST['add_dict'])) {
     }
 }
 
-// Pobranie kategorii
-$categories = $conn->query("SELECT * FROM kategorie ORDER BY nazwa ASC")->fetchAll();
-
-// Pobranie słownika bota
-$dictionary = $conn->query("SELECT * FROM slownik_bota ORDER BY ids DESC")->fetchAll();
+// --- POBIERANIE DANYCH ---
 
 // Pobranie użytkowników
 $users = $conn->query("SELECT idu, nazwa_uzytkownika, rola, data_utworzenia FROM uzytkownicy ORDER BY data_utworzenia DESC")->fetchAll();
 
-// Pobranie logów logowania
-$logs = $conn->query("SELECT l.*, u.nazwa_uzytkownika FROM logi_logowania l LEFT JOIN uzytkownicy u ON l.idu = u.idu ORDER BY l.datagodzina DESC LIMIT 10")->fetchAll();
+// Wykrywanie blokad Brute-Force
+function getBlockedUsers($conn) {
+    $stmt = $conn->query("SELECT DISTINCT login_attempted FROM logi_logowania");
+    $logins = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $blocked = [];
+    foreach ($logins as $l) {
+        $stmt_check = $conn->prepare("SELECT stan FROM logi_logowania WHERE login_attempted = ? ORDER BY datagodzina DESC LIMIT 3");
+        $stmt_check->execute([$l]);
+        $atts = $stmt_check->fetchAll(PDO::FETCH_COLUMN);
+        if (count($atts) === 3 && array_sum($atts) === 0) $blocked[] = $l;
+    }
+    return $blocked;
+}
+$blocked_users = getBlockedUsers($conn);
 
-// Pobranie logów bota
-$bot_logs = $conn->query("SELECT * FROM logi_bota ORDER BY data_godzina DESC LIMIT 15")->fetchAll();
+// Kategorie, Słownik, Logi
+$categories = $conn->query("SELECT * FROM kategorie ORDER BY nazwa ASC")->fetchAll();
+$dictionary = $conn->query("SELECT * FROM slownik_bota ORDER BY ids DESC")->fetchAll();
+$login_logs = $conn->query("SELECT l.*, u.nazwa_uzytkownika FROM logi_logowania l LEFT JOIN uzytkownicy u ON l.idu = u.idu ORDER BY l.datagodzina DESC LIMIT 20")->fetchAll();
+$bot_logs = $conn->query("SELECT * FROM logi_bota ORDER BY data_godzina DESC LIMIT 20")->fetchAll();
 
 ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Administracyjny - CMS</title>
+    <title>🛡️ Admin Panel - CMS Lab 16</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        body { background: #121212; color: #eee; }
-        .admin-section { background: #1e1e1e; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
-        .table { color: #eee; }
+        body { background: #0a0a0a; color: #eee; }
+        .admin-card { background: #161616; border: 1px solid #333; border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
+        .card-header { background: rgba(255,193,7, 0.1); border-bottom: 1px solid #444; color: #ffc107; font-weight: bold; padding: 12px 20px; }
+        .table { color: #ccc; font-size: 0.9rem; }
+        .status-success { color: #2ecc71; }
+        .status-fail { color: #e74c3c; }
+        .efficiency-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark border-bottom border-secondary mb-4">
+    <nav class="navbar navbar-dark bg-black border-bottom border-warning mb-4">
         <div class="container-fluid">
-            <span class="navbar-brand">Panel Administracyjny CMS</span>
+            <a class="navbar-brand text-warning fw-bold" href="dashboard.php">🛡️ CMS SECURITY & ADMIN</a>
             <a href="dashboard.php" class="btn btn-outline-light btn-sm">Powrót do treści</a>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
         <div class="row">
-            <!-- Zarządzanie Kategoriami -->
-            <div class="col-md-4">
-                <div class="admin-section">
-                    <h4>Kategorie</h4>
-                    <form method="POST" class="mb-3 d-flex gap-2">
-                        <input type="text" name="cat_name" class="form-control" placeholder="Nowa kategoria" required>
-                        <button type="submit" name="add_category" class="btn btn-success">Dodaj</button>
-                    </form>
-                    <ul class="list-group">
-                        <?php foreach($categories as $cat): ?>
-                            <li class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between">
-                                <?php echo htmlspecialchars($cat['nazwa']); ?>
-                                <span class="text-secondary small">/<?php echo $cat['slug']; ?></span>
-                            </li>
+            
+            <!-- 1. BLOKADY BRUTE-FORCE -->
+            <?php if (!empty($blocked_users)): ?>
+            <div class="col-12 mb-4">
+                <div class="admin-card border-danger">
+                    <div class="card-header text-danger">⚠️ Wykryte blokady kont (Brute-Force)</div>
+                    <div class="card-body p-3">
+                        <?php foreach($blocked_users as $bu): ?>
+                            <form method="POST" class="d-inline-block me-2 mb-2">
+                                <input type="hidden" name="unblock_user" value="<?php echo htmlspecialchars($bu); ?>">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Odblokuj: <?php echo htmlspecialchars($bu); ?></button>
+                            </form>
                         <?php endforeach; ?>
-                    </ul>
+                    </div>
                 </div>
             </div>
+            <?php endif; ?>
 
-            <!-- Zarządzanie Użytkownikami -->
-            <div class="col-md-8">
-                <!-- Słownik Bota -->
-                <div class="admin-section">
-                    <h4>Słownik Bota</h4>
-                    <form method="POST" class="row g-2 mb-3">
-                        <div class="col-md-4">
-                            <input type="text" name="dict_key" class="form-control" placeholder="Słowa kluczowe (po przecinku)" required>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" name="dict_val" class="form-control" placeholder="Odpowiedź bota" required>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" name="add_dict" class="btn btn-primary w-100">Dodaj</button>
-                        </div>
-                    </form>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        <table class="table table-sm table-dark">
+            <!-- 2. UŻYTKOWNICY I LOGI -->
+            <div class="col-lg-8">
+                <div class="admin-card">
+                    <div class="card-header">👥 Zarejestrowani Użytkownicy</div>
+                    <div class="card-body p-0">
+                        <table class="table table-dark table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Klucze</th>
-                                    <th>Odpowiedź</th>
+                                    <th>ID</th>
+                                    <th>Nazwa</th>
+                                    <th>Rola</th>
+                                    <th>Data utworzenia</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach($dictionary as $d): ?>
+                                <?php foreach ($users as $u): ?>
                                 <tr>
-                                    <td class="text-info"><?php echo htmlspecialchars($d['pytanie_klucz']); ?></td>
-                                    <td><?php echo htmlspecialchars($d['odpowiedz']); ?></td>
+                                    <td><?php echo $u['idu']; ?></td>
+                                    <td class="fw-bold"><?php echo htmlspecialchars($u['nazwa_uzytkownika']); ?></td>
+                                    <td>
+                                        <span class="badge <?php echo $u['rola'] === 'admin' ? 'bg-danger' : 'bg-primary'; ?>">
+                                            <?php echo $u['rola']; ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-secondary"><?php echo $u['data_utworzenia']; ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -121,91 +140,97 @@ $bot_logs = $conn->query("SELECT * FROM logi_bota ORDER BY data_godzina DESC LIM
                     </div>
                 </div>
 
-                <!-- Logi Bota -->
-                <div class="admin-section">
-                    <h4>Ostatnie zapytania do bota</h4>
-                    <table class="table table-sm" style="font-size: 0.85rem;">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Zapytanie</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($bot_logs as $bl): ?>
-                            <tr>
-                                <td><?php echo $bl['data_godzina']; ?></td>
-                                <td><?php echo htmlspecialchars($bl['zapytanie_uzytkownika']); ?></td>
-                                <td>
-                                    <?php if($bl['czy_znaleziono_odp']): ?>
-                                        <span class="badge bg-success">Trafienie</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-warning text-dark">Brak odp.</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="admin-section">
-                    <h4>Użytkownicy</h4>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Użytkownik</th>
-                                <th>Rola</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($users as $u): ?>
-                            <tr>
-                                <td><?php echo $u['idu']; ?></td>
-                                <td><?php echo htmlspecialchars($u['nazwa_uzytkownika']); ?></td>
-                                <td><span class="badge <?php echo $u['rola'] === 'admin' ? 'bg-danger' : 'bg-primary'; ?>"><?php echo $u['rola']; ?></span></td>
-                                <td><?php echo $u['data_utworzenia']; ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="admin-section">
-                    <h4>Ostatnie logowania</h4>
-                    <table class="table table-sm" style="font-size: 0.85rem;">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Próba jako</th>
-                                <th>Użytkownik</th>
-                                <th>Status</th>
-                                <th>IP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($logs as $l): ?>
-                            <tr>
-                                <td><?php echo $l['datagodzina']; ?></td>
-                                <td><?php echo htmlspecialchars($l['login_attempted']); ?></td>
-                                <td><?php echo htmlspecialchars($l['nazwa_uzytkownika'] ?? '---'); ?></td>
-                                <td>
-                                    <?php if($l['stan'] == 1): ?>
-                                        <span class="text-success">OK</span>
-                                    <?php else: ?>
-                                        <span class="text-danger">FAIL</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo $l['ip_address']; ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <div class="admin-card">
+                    <div class="card-header">🔑 Logi systemowe (Ostatnie logowania)</div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm table-dark mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Login</th>
+                                        <th>Status</th>
+                                        <th>IP / System</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($login_logs as $l): ?>
+                                    <tr>
+                                        <td class="text-secondary"><?php echo $l['datagodzina']; ?></td>
+                                        <td class="fw-bold"><?php echo htmlspecialchars($l['login_attempted']); ?></td>
+                                        <td><span class="<?php echo $l['stan'] ? 'status-success' : 'status-fail'; ?>"><?php echo $l['stan'] ? 'OK' : 'FAIL'; ?></span></td>
+                                        <td><?php echo $l['ip_address']; ?> (<?php echo $l['system']; ?>)</td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- 3. KATEGORIE I SŁOWNIK -->
+            <div class="col-lg-4">
+                <div class="admin-card">
+                    <div class="card-header">🏷️ Kategorie</div>
+                    <div class="card-body">
+                        <form method="POST" class="d-flex gap-2 mb-3">
+                            <input type="text" name="cat_name" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Nowa kategoria" required>
+                            <button type="submit" name="add_category" class="btn btn-sm btn-success">Dodaj</button>
+                        </form>
+                        <ul class="list-group list-group-flush">
+                            <?php foreach($categories as $cat): ?>
+                                <li class="list-group-item bg-transparent text-white-50 border-secondary d-flex justify-content-between py-1 px-0">
+                                    <small><?php echo htmlspecialchars($cat['nazwa']); ?></small>
+                                    <small class="text-secondary">/<?php echo $cat['slug']; ?></small>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="card-header">🤖 Słownik Bota</div>
+                    <div class="card-body">
+                        <form method="POST" class="mb-3">
+                            <input type="text" name="dict_key" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Słowa kluczowe..." required>
+                            <textarea name="dict_val" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Odpowiedź bota..." required></textarea>
+                            <button type="submit" name="add_dict" class="btn btn-sm btn-primary w-100">Dodaj do bazy wiedzy</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="card-header">🕵️ Ostatnie zapytania bota</div>
+                    <div class="card-body p-0">
+                        <div style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-dark mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Zapytanie</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($bot_logs as $bl): ?>
+                                    <tr>
+                                        <td style="font-size: 0.8rem;"><?php echo htmlspecialchars($bl['zapytanie_uzytkownika']); ?></td>
+                                        <td>
+                                            <?php if($bl['czy_znaleziono_odp']): ?>
+                                                <span class="text-success small">Trafiony</span>
+                                            <?php else: ?>
+                                                <span class="text-warning small">Brak</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </body>
