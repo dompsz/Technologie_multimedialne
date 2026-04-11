@@ -52,6 +52,23 @@ CREATE TABLE IF NOT EXISTS `logi_logowania` (
   CONSTRAINT `fk_logi_uzytkownicy` FOREIGN KEY (`idu`) REFERENCES `uzytkownicy` (`idu`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 5. Tabela Słownik Bota
+CREATE TABLE IF NOT EXISTS `slownik_bota` (
+  `ids` int(11) NOT NULL AUTO_INCREMENT,
+  `pytanie_klucz` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `odpowiedz` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`ids`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. Tabela Logi Bota
+CREATE TABLE IF NOT EXISTS `logi_bota` (
+  `idl` int(11) NOT NULL AUTO_INCREMENT,
+  `zapytanie_uzytkownika` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `data_godzina` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `czy_znaleziono_odp` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`idl`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- SEEDOWANIE DANYCH
 
 -- Kategorie
@@ -60,6 +77,13 @@ INSERT INTO `kategorie` (`nazwa`, `slug`) VALUES
 ('Multimedia', 'multimedia'),
 ('Web Development', 'web-development')
 ON DUPLICATE KEY UPDATE nazwa=VALUES(nazwa);
+
+-- Słownik Bota
+INSERT INTO `slownik_bota` (`pytanie_klucz`, `odpowiedz`) VALUES 
+('cześć, witaj, hej', 'Witaj! Jestem inteligentnym botem CMS. O co chciałbyś zapytać?'),
+('kontakt, telefon, mail', 'Możesz się z nami skontaktować pod numerem +48 123 456 789 lub mailowo: kontakt@przyklad.pl'),
+('godziny, otwarcia', 'Pracujemy od poniedziałku do piątku w godzinach 8:00 - 16:00.')
+ON DUPLICATE KEY UPDATE odpowiedz=VALUES(odpowiedz);
 
 -- Konta testowe (hasła: admin, redaktor)
 -- Hasła standardowe: admin -> admin, redaktor -> redaktor
