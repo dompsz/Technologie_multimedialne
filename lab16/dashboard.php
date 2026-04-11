@@ -31,12 +31,24 @@ $pages = $stmt->fetchAll();
         .table thead { background: rgba(255,255,255,0.05); }
         .badge-status { font-size: 0.8rem; }
         .btn-action { padding: 5px 10px; font-size: 0.9rem; }
+        
+        /* Chatbot Widget Styles */
+        .chat-widget { position: fixed; bottom: 30px; right: 30px; width: 350px; background: #1e1e1e; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 1000; }
+        .chat-header { background: #007bff; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .chat-body { height: 300px; padding: 15px; overflow-y: auto; background: #222; display: none; }
+        .chat-footer { padding: 10px; border-top: 1px solid #333; display: none; }
+        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 85%; font-size: 0.85rem; }
+        .msg-bot { background: #333; color: white; align-self: flex-start; }
+        .msg-user { background: #007bff; color: white; align-self: flex-end; margin-left: auto; }
+        .avatar { width: 35px; height: 35px; margin-right: 10px; transition: transform 0.3s; }
+        .typing .avatar { animation: bounce 0.5s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">CMS Lab 16</a>
+            <a class="navbar-brand" href="index.php">CMS Lab 16</a>
             <div class="d-flex align-items-center">
                 <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($username); ?></strong> (<?php echo $role; ?>)</span>
                 <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
@@ -100,5 +112,85 @@ $pages = $stmt->fetchAll();
             </table>
         </div>
     </div>
+
+    <!-- Chatbot Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header" onclick="toggleChat()">
+            <div class="d-flex align-items-center">
+                <img src="../assets/default-avatar.svg" class="avatar" id="botAvatar">
+                <span>Asystent CMS</span>
+            </div>
+            <span id="chatToggleIcon">+</span>
+        </div>
+        <div class="chat-body d-flex flex-column" id="chatBody">
+            <div class="msg msg-bot">Cześć <?php echo htmlspecialchars($username); ?>! W czym mogę Ci dzisiaj pomóc?</div>
+        </div>
+        <div class="chat-footer" id="chatFooter">
+            <div class="input-group">
+                <input type="text" id="chatInput" class="form-control bg-dark text-white border-secondary" placeholder="Zadaj pytanie...">
+                <button class="btn btn-primary" onclick="sendMessage()">Wyślij</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            const body = document.getElementById('chatBody');
+            const footer = document.getElementById('chatFooter');
+            const icon = document.getElementById('chatToggleIcon');
+            
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'flex';
+                footer.style.display = 'block';
+                icon.innerText = '−';
+            } else {
+                body.style.display = 'none';
+                footer.style.display = 'none';
+                icon.innerText = '+';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const body = document.getElementById('chatBody');
+            const avatar = document.getElementById('botAvatar');
+            const query = input.value.trim();
+
+            if (query === '') return;
+
+            appendMessage(query, 'user');
+            input.value = '';
+
+            avatar.parentElement.parentElement.parentElement.classList.add('typing');
+
+            fetch('chat_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            })
+            .then(res => res.json())
+            .then(data => {
+                avatar.parentElement.parentElement.parentElement.classList.remove('typing');
+                appendMessage(data.reply, 'bot');
+            })
+            .catch(err => {
+                avatar.parentElement.parentElement.parentElement.classList.remove('typing');
+                appendMessage('Błąd połączenia z botem.', 'bot');
+            });
+        }
+
+        function appendMessage(text, side) {
+            const body = document.getElementById('chatBody');
+            const div = document.createElement('div');
+            div.className = `msg msg-${side}`;
+            div.innerHTML = text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
 </body>
 </html>
