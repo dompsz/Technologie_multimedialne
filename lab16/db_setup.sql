@@ -80,9 +80,10 @@ ON DUPLICATE KEY UPDATE nazwa=VALUES(nazwa);
 
 -- Słownik Bota
 INSERT INTO `slownik_bota` (`pytanie_klucz`, `odpowiedz`) VALUES 
-('cześć, witaj, hej', 'Witaj! Jestem inteligentnym botem CMS. O co chciałbyś zapytać?'),
-('kontakt, telefon, mail', 'Możesz się z nami skontaktować pod numerem +48 123 456 789 lub mailowo: kontakt@przyklad.pl'),
-('godziny, otwarcia', 'Pracujemy od poniedziałku do piątku w godzinach 8:00 - 16:00.')
+('cześć, witaj, hej, dzień dobry', 'Witaj! Jestem inteligentnym asystentem CMS. W czym mogę Ci pomóc? Możesz zapytać o ofertę, kontakt lub godziny otwarcia.'),
+('kontakt, telefon, mail, adres', 'Dane kontaktowe: ul. Technologiczna 1, 00-001 Warszawa. Tel: +48 123 456 789, E-mail: biuro@naszcms.pl'),
+('godziny, otwarcia, kiedy', 'Zapraszamy od poniedziałku do piątku w godzinach 8:00 - 18:00 oraz w soboty od 9:00 do 14:00.'),
+('pomoc, potrafisz, co robisz', 'Pomagam w nawigacji po systemie. Spróbuj wpisać frazę taką jak "oferta", "kontakt" lub "kto jest autorem".')
 ON DUPLICATE KEY UPDATE odpowiedz=VALUES(odpowiedz);
 
 -- Konta testowe (hasła: admin, redaktor)
@@ -92,7 +93,9 @@ INSERT INTO `uzytkownicy` (`idu`, `nazwa_uzytkownika`, `haslo`, `rola`) VALUES
 (2, 'redaktor1', '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', 'redaktor')
 ON DUPLICATE KEY UPDATE rola=VALUES(rola);
 
--- Przykładowa podstrona
+-- Przykładowe podstrony
 INSERT INTO `podstrony` (`tytul`, `tresc`, `slug`, `idk`, `idu`, `status`) VALUES 
-('Witaj w naszym CMS', '<p>To jest pierwsza strona stworzona w naszym systemie CMS.</p>', 'witaj-w-naszym-cms', 1, 1, 'opublikowany')
+('Witaj w naszym CMS', '<p>To jest pierwsza strona stworzona w naszym systemie CMS.</p>', 'witaj-w-naszym-cms', 1, 1, 'opublikowany'),
+('Oferta', '<p>Nasza oferta obejmuje nowoczesne rozwiązania informatyczne, tworzenie stron WWW oraz systemy CMS oparte na PHP.</p><p><strong>Promocja:</strong> Przy zamówieniu strony do końca miesiąca - hosting gratis!</p>', 'oferta', 2, 1, 'opublikowany'),
+('O firmie', '<p>Jesteśmy liderem w dostarczaniu prostych i intuicyjnych systemów zarządzania treścią od 2024 roku.</p>', 'o-firmie', 3, 2, 'opublikowany')
 ON DUPLICATE KEY UPDATE tytul=VALUES(tytul);

@@ -33,10 +33,10 @@ $pages = $stmt->fetchAll();
         .btn-action { padding: 5px 10px; font-size: 0.9rem; }
         
         /* Chatbot Widget Styles */
-        .chat-widget { position: fixed; bottom: 30px; right: 30px; width: 350px; background: #1e1e1e; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 1000; }
-        .chat-header { background: #007bff; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .chat-body { height: 300px; padding: 15px; overflow-y: auto; background: #222; display: none; }
-        .chat-footer { padding: 10px; border-top: 1px solid #333; display: none; }
+        .chat-widget { position: fixed; bottom: 0; right: 30px; width: 350px; background: #1e1e1e; border: 1px solid #444; border-top-left-radius: 12px; border-top-right-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 1000; transition: transform 0.3s ease; }
+        .chat-header { background: #007bff; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .chat-body { height: 350px; padding: 15px; overflow-y: auto; background: #222; display: none; border-left: 1px solid #444; border-right: 1px solid #444; }
+        .chat-footer { padding: 10px; border-top: 1px solid #333; display: none; background: #1e1e1e; border-left: 1px solid #444; border-right: 1px solid #444; }
         .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 85%; font-size: 0.85rem; }
         .msg-bot { background: #333; color: white; align-self: flex-start; }
         .msg-user { background: #007bff; color: white; align-self: flex-end; margin-left: auto; }
