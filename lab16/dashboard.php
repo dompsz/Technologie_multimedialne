@@ -122,7 +122,7 @@ $pages = $stmt->fetchAll();
             </div>
             <span id="chatToggleIcon">+</span>
         </div>
-        <div class="chat-body d-flex flex-column" id="chatBody">
+        <div class="chat-body" id="chatBody">
             <div class="msg msg-bot">Cześć <?php echo htmlspecialchars($username); ?>! W czym mogę Ci dzisiaj pomóc?</div>
         </div>
         <div class="chat-footer" id="chatFooter">
