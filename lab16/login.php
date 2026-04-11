@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($user && password_verify($password, $user['haslo'])) {
                 $_SESSION['lab16_user_id'] = $user['idu'];
                 $_SESSION['lab16_username'] = $user['nazwa_uzytkownika'];
-                $_SESSION['lab16_role'] = $user['rola'];
+                $_SESSION['lab16_role'] = (string)$user['rola']; // Rzutowanie na string dla pewności
 
                 $stmt_log = $conn->prepare("INSERT INTO logi_logowania (idu, login_attempted, ip_address, przegladarka, system, stan) VALUES (?, ?, ?, ?, ?, 1)");
                 $stmt_log->execute([$user['idu'], $username, $ip, $browser, $os]);

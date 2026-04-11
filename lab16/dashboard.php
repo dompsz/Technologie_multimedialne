@@ -51,6 +51,9 @@ $pages = $stmt->fetchAll();
             <a class="navbar-brand" href="index.php">CMS Lab 16</a>
             <div class="d-flex align-items-center">
                 <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($username); ?></strong> (<?php echo $role; ?>)</span>
+                <?php if ($role === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Administratora</a>
+                <?php endif; ?>
                 <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
             </div>
         </div>
