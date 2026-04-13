@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS `uzytkownicy` (
   `haslo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `poziom_uprawnien` int(1) NOT NULL DEFAULT 1 COMMENT '0-gość, 1-użytkownik, 2-moderator, 3-admin',
   `data_rejestracji` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ban_do` timestamp NULL DEFAULT NULL COMMENT 'Data i godzina końca bana',
+  `liczba_ostrzezen` int(11) NOT NULL DEFAULT 0 COMMENT 'Liczba wykrytych wulgaryzmów',
+  `powod_blokady` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`idu`),
   UNIQUE KEY `login` (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

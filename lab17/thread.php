@@ -18,21 +18,37 @@ $main_post = $stmt_m->fetch();
 
 if (!$main_post) die("Wątek nie istnieje lub został zablokowany.");
 
+// Sprawdzenie bana
+$ban_info = isset($_SESSION['lab17_user_id']) ? isUserBanned($_SESSION['lab17_user_id'], $conn) : false;
+
 // Obsługa dodawania odpowiedzi
 $error = "";
+$warning = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_reply'])) {
     if (!isset($_SESSION['lab17_user_id'])) {
         $error = "Musisz być zalogowany, aby odpowiedzieć.";
+    } elseif ($ban_info) {
+        $error = "Jesteś zablokowany do: " . $ban_info['ban_do'] . ". Powód: " . $ban_info['powod_blokady'];
     } else {
         $tresc = trim($_POST['tresc']);
         if (empty($tresc)) {
             $error = "Treść odpowiedzi nie może być pusta.";
         } else {
-            $tresc = filterContent($tresc, $conn);
+            $f_tresc = filterContent($tresc, $conn);
+            
+            if ($f_tresc['profanity_count'] > 0) {
+                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $f_tresc['profanity_count'], $conn);
+                $warning = "⚠️ Wykryto wulgaryzmy! Konto zablokowane do: " . $punishment['ban_until'];
+                $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
+            }
+
             $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, id_rodzic, tresc) VALUES (?, ?, ?, ?)");
-            $stmt_ins->execute([$main_post['idt'], $_SESSION['lab17_user_id'], $idw, $tresc]);
-            header("Location: thread.php?id=$idw&msg=replied");
-            exit();
+            $stmt_ins->execute([$main_post['idt'], $_SESSION['lab17_user_id'], $idw, $f_tresc['text']]);
+            
+            if (!$warning) {
+                header("Location: thread.php?id=$idw&msg=replied");
+                exit();
+            }
         }
     }
 }
@@ -140,7 +156,9 @@ $replies = $stmt_r->fetchAll();
                 <?php if ($error): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
-                <form method="POST">
+                <?php if ($warning): ?>
+                    <div class="alert alert-warning"><?php echo $warning; ?></div>
+                <?php endif; ?>                <form method="POST">
                     <input type="hidden" name="add_reply" value="1">
                     <div class="mb-3">
                         <textarea name="tresc" class="form-control bg-dark text-light border-secondary" rows="6" placeholder="Napisz co myślisz..." required></textarea>

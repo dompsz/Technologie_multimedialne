@@ -12,11 +12,18 @@ $temat = $stmt_t->fetch();
 
 if (!$temat) die("Temat nie istnieje.");
 
+// Sprawdzenie bana
+$ban_info = isset($_SESSION['lab17_user_id']) ? isUserBanned($_SESSION['lab17_user_id'], $conn) : false;
+
 // Obsługa dodawania nowego wątku
 $error = "";
+$warning = "";
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_thread'])) {
     if (!isset($_SESSION['lab17_user_id'])) {
         $error = "Musisz być zalogowany, aby dodać wątek.";
+    } elseif ($ban_info) {
+        $error = "Jesteś zablokowany do: " . $ban_info['ban_do'] . ". Powód: " . $ban_info['powod_blokady'];
     } else {
         $tytul = trim($_POST['tytul']);
         $tresc = trim($_POST['tresc']);
@@ -24,14 +31,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_thread'])) {
         if (empty($tytul) || empty($tresc)) {
             $error = "Wypełnij wszystkie pola.";
         } else {
-            // Filtrowanie treści
-            $tresc = filterContent($tresc, $conn);
-            $tytul = filterContent($tytul, $conn);
+            // Filtrowanie i liczenie wulgaryzmów
+            $f_tytul = filterContent($tytul, $conn);
+            $f_tresc = filterContent($tresc, $conn);
             
+            $total_profanity = $f_tytul['profanity_count'] + $f_tresc['profanity_count'];
+            
+            if ($total_profanity > 0) {
+                // Nakładamy karę
+                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $total_profanity, $conn);
+                $warning = "⚠️ Wykryto niedozwolone słowa! Twoje konto zostało zablokowane do: " . $punishment['ban_until'] . " (Incydent #" . $punishment['new_offenses'] . ")";
+                // Odświeżamy info o banie
+                $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
+            }
+
+            // Zapisujemy mimo wszystko (już ocenzurowane) - lub blokujemy zapis (zależnie od polityki)
+            // Tutaj: zapisujemy ocenzurowane, ale user dostaje bana na przyszłość
             $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, tytul, tresc) VALUES (?, ?, ?, ?)");
-            $stmt_ins->execute([$idt, $_SESSION['lab17_user_id'], $tytul, $tresc]);
-            header("Location: topic.php?id=$idt&msg=created");
-            exit();
+            $stmt_ins->execute([$idt, $_SESSION['lab17_user_id'], $f_tytul['text'], $f_tresc['text']]);
+            
+            if (!$warning) {
+                header("Location: topic.php?id=$idt&msg=created");
+                exit();
+            }
         }
     }
 }
@@ -76,7 +98,7 @@ $watki = $stmt_w->fetchAll();
                 <h2 class="mb-1"><?php echo htmlspecialchars($temat['nazwa_tematu']); ?></h2>
                 <p class="text-secondary"><?php echo htmlspecialchars($temat['opis']); ?></p>
             </div>
-            <?php if (isset($_SESSION['lab17_user_id'])): ?>
+            <?php if (isset($_SESSION['lab17_user_id']) && !$ban_info): ?>
                 <button class="btn btn-accent" data-bs-toggle="collapse" data-bs-target="#newThreadForm">➕ Nowy Wątek</button>
             <?php endif; ?>
         </div>
@@ -84,8 +106,21 @@ $watki = $stmt_w->fetchAll();
         <?php if ($error): ?>
             <div class="alert alert-danger"><?php echo $error; ?></div>
         <?php endif; ?>
+        
+        <?php if ($warning): ?>
+            <div class="alert alert-warning"><?php echo $warning; ?></div>
+        <?php endif; ?>
+
+        <?php if ($ban_info && !isset($_POST['add_thread'])): ?>
+            <div class="alert alert-danger">
+                <strong>Twoje konto jest obecnie zablokowane!</strong><br>
+                Powód: <?php echo htmlspecialchars($ban_info['powod_blokady']); ?><br>
+                Blokada wygasa: <?php echo $ban_info['ban_do']; ?>
+            </div>
+        <?php endif; ?>
 
         <!-- Formularz Nowego Wątku -->
+        <?php if (isset($_SESSION['lab17_user_id']) && !$ban_info): ?>
         <div class="collapse mb-5" id="newThreadForm">
             <div class="card bg-dark text-light border-accent p-4">
                 <h4>Rozpocznij nową dyskusję</h4>
@@ -98,12 +133,13 @@ $watki = $stmt_w->fetchAll();
                     <div class="mb-3">
                         <label class="form-label text-secondary">Treść wiadomości</label>
                         <textarea name="tresc" class="form-control bg-dark text-light border-secondary" rows="5" required></textarea>
-                        <small class="text-muted">Pamiętaj o kulturze wypowiedzi. Linki będą usuwane automatycznie.</small>
+                        <small class="text-muted">Pamiętaj o kulturze wypowiedzi. Wulgaryzmy skutkują automatycznym banem!</small>
                     </div>
                     <button type="submit" class="btn btn-accent px-4">OPUBLIKUJ WĄTEK</button>
                 </form>
             </div>
         </div>
+        <?php endif; ?>
 
         <div class="table-responsive">
             <table class="table table-dark table-hover align-middle">

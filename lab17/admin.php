@@ -47,6 +47,32 @@ if (isset($_POST['change_role']) && $user_role == 3) {
     $stmt->execute([$new_role, $idu]);
 }
 
+// 5. Ręczne nakładanie banów
+if (isset($_POST['ban_user'])) {
+    $idu = (int)$_POST['user_id'];
+    $duration = $_POST['duration'];
+    $reason = trim($_POST['reason'] ?: 'Blokada nałożona przez moderatora');
+    
+    $ban_until = null;
+    if ($duration == '1m') $ban_until = date('Y-m-d H:i:s', strtotime('+1 minute'));
+    elseif ($duration == '10m') $ban_until = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+    elseif ($duration == '1h') $ban_until = date('Y-m-d H:i:s', strtotime('+1 hour'));
+    elseif ($duration == '1d') $ban_until = date('Y-m-d H:i:s', strtotime('+1 day'));
+    elseif ($duration == 'perm') $ban_until = '2099-12-31 23:59:59';
+
+    if ($ban_until) {
+        $stmt = $conn->prepare("UPDATE uzytkownicy SET ban_do = ?, powod_blokady = ? WHERE idu = ?");
+        $stmt->execute([$ban_until, $reason, $idu]);
+    }
+}
+
+// 6. Zdejmowanie banów
+if (isset($_GET['unban_user'])) {
+    $idu = (int)$_GET['unban_user'];
+    $stmt = $conn->prepare("UPDATE uzytkownicy SET ban_do = NULL, powod_blokady = NULL WHERE idu = ?");
+    $stmt->execute([$idu]);
+}
+
 // --- POBIERANIE DANYCH ---
 $tematy = $conn->query("SELECT * FROM tematy")->fetchAll();
 $cenzura = $conn->query("SELECT * FROM cenzura")->fetchAll();
@@ -140,27 +166,62 @@ $recent_posts = $stmt_posts->fetchAll();
                 <div class="admin-card">
                     <div class="card-header">👥 Użytkownicy</div>
                     <div class="card-body p-0">
-                        <div style="max-height: 350px; overflow-y: auto;">
+                        <div style="max-height: 450px; overflow-y: auto;">
                             <table class="table table-sm table-dark mb-0">
-                                <thead><tr><th>Login</th><th>Rola</th><?php if($user_role==3): ?><th>Akcja</th><?php endif; ?></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>Użytkownik</th>
+                                        <th>Status/Ban</th>
+                                        <th>Akcje</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    <?php foreach ($users as $u): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($u['login']); ?></td>
-                                            <td><?php echo getRoleLabel($u['poziom_uprawnien']); ?></td>
-                                            <?php if($user_role == 3): ?>
+                                    <?php foreach ($users as $u): 
+                                        $b_info = isUserBanned($u['idu'], $conn);
+                                    ?>
+                                        <tr class="border-secondary">
+                                            <td class="small">
+                                                <strong><?php echo htmlspecialchars($u['login']); ?></strong><br>
+                                                <?php echo getRoleLabel($u['poziom_uprawnien']); ?>
+                                            </td>
+                                            <td class="small">
+                                                <?php if($b_info): ?>
+                                                    <span class="text-danger">BAN do:<br><?php echo $b_info['ban_do']; ?></span>
+                                                    <a href="admin.php?unban_user=<?php echo $u['idu']; ?>" class="btn btn-xxs btn-outline-success p-0 px-1" style="font-size: 0.6rem;">Odblokuj</a>
+                                                <?php else: ?>
+                                                    <span class="text-success">Aktywny</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>
-                                                <form method="POST" class="d-flex gap-1">
+                                                <!-- Zmiana roli (Admin) -->
+                                                <?php if($user_role == 3): ?>
+                                                <form method="POST" class="d-flex gap-1 mb-1">
                                                     <input type="hidden" name="user_id" value="<?php echo $u['idu']; ?>">
-                                                    <select name="new_role" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size: 0.7rem;">
+                                                    <select name="new_role" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size: 0.6rem;">
                                                         <option value="1" <?php echo $u['poziom_uprawnien']==1?'selected':''; ?>>User</option>
                                                         <option value="2" <?php echo $u['poziom_uprawnien']==2?'selected':''; ?>>Mod</option>
                                                         <option value="3" <?php echo $u['poziom_uprawnien']==3?'selected':''; ?>>Admin</option>
                                                     </select>
-                                                    <button type="submit" name="change_role" class="btn btn-sm btn-outline-warning py-0" style="font-size: 0.7rem;">OK</button>
+                                                    <button type="submit" name="change_role" class="btn btn-sm btn-outline-warning py-0" style="font-size: 0.6rem;">Rola</button>
+                                                </form>
+                                                <?php endif; ?>
+
+                                                <!-- Nakładanie Bana -->
+                                                <form method="POST" class="d-flex flex-column gap-1">
+                                                    <input type="hidden" name="user_id" value="<?php echo $u['idu']; ?>">
+                                                    <div class="d-flex gap-1">
+                                                        <select name="duration" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size: 0.6rem;">
+                                                            <option value="1m">1 min</option>
+                                                            <option value="10m">10 min</option>
+                                                            <option value="1h">1 godz</option>
+                                                            <option value="1d">1 dzień</option>
+                                                            <option value="perm">Perm</option>
+                                                        </select>
+                                                        <button type="submit" name="ban_user" class="btn btn-sm btn-danger py-0" style="font-size: 0.6rem;">BAN</button>
+                                                    </div>
+                                                    <input type="text" name="reason" class="form-control form-control-sm bg-dark text-white border-secondary py-0" placeholder="Powód..." style="font-size: 0.6rem;">
                                                 </form>
                                             </td>
-                                            <?php endif; ?>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
