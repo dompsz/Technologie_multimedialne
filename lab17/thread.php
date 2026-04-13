@@ -42,10 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_reply'])) {
                 $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
             }
 
-            $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, id_rodzic, tresc) VALUES (?, ?, ?, ?)");
-            $stmt_ins->execute([$main_post['idt'], $_SESSION['lab17_user_id'], $idw, $f_tresc['text']]);
+            if (!$f_tresc['malicious_found']) {
+                $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, id_rodzic, tresc) VALUES (?, ?, ?, ?)");
+                $stmt_ins->execute([$main_post['idt'], $_SESSION['lab17_user_id'], $idw, $f_tresc['text']]);
+            } else {
+                $error = "❌ Twoja wiadomość zawiera niebezpieczne linki i nie została opublikowana.";
+            }
             
-            if (!$warning) {
+            if (!$warning && !$f_tresc['malicious_found']) {
                 header("Location: thread.php?id=$idw&msg=replied");
                 exit();
             }

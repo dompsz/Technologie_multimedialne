@@ -10,11 +10,12 @@ function filterContent($text, $conn) {
     $malicious_found = false;
 
     // 1. Wykrywanie i Neutralizacja linków + Sprawdzanie niebezpiecznych domen
-    $pattern = '/(?:https?:\/\/|www\.)([a-z0-9.-]+\.[a-z]{2,})/i';
+    // Wzorzec wykrywający domeny (z http/www lub bez)
+    $pattern = '/\b(?:https?:\/\/|www\.)?([a-z0-9.-]+\.[a-z]{2,})\b/i';
     
     // Znajdź wszystkie domeny w tekście
     if (preg_match_all($pattern, $text, $matches)) {
-        $found_domains = array_unique($matches[1]);
+        $found_domains = array_unique(array_map('strtolower', $matches[1]));
         if (!empty($found_domains)) {
             // Przygotuj zapytanie do sprawdzenia wielu domen naraz
             $placeholders = implode(',', array_fill(0, count($found_domains), '?'));
@@ -28,8 +29,8 @@ function filterContent($text, $conn) {
         }
     }
 
-    // Neutralizacja wszystkich linków
-    $text = preg_replace('/(https?:\/\/[^\s]+|www\.[^\s]+)/i', '[link usunięty]', $text);
+    // Neutralizacja wszystkich wykrytych linków/domen
+    $text = preg_replace($pattern, '[link usunięty]', $text);
 
     // 2. Cenzura wulgaryzmów z bazy danych
     $stmt = $conn->query("SELECT slowo_zakazane, zamiennik FROM cenzura");

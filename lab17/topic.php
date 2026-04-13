@@ -46,12 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_thread'])) {
                 $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
             }
 
-            // Zapisujemy mimo wszystko (już ocenzurowane) - lub blokujemy zapis (zależnie od polityki)
-            // Tutaj: zapisujemy ocenzurowane, ale user dostaje bana na przyszłość
-            $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, tytul, tresc) VALUES (?, ?, ?, ?)");
-            $stmt_ins->execute([$idt, $_SESSION['lab17_user_id'], $f_tytul['text'], $f_tresc['text']]);
+            if (!$is_malicious) {
+                $stmt_ins = $conn->prepare("INSERT INTO watki (idt, idu, tytul, tresc) VALUES (?, ?, ?, ?)");
+                $stmt_ins->execute([$idt, $_SESSION['lab17_user_id'], $f_tytul['text'], $f_tresc['text']]);
+            } else {
+                $error = "❌ Twój wątek zawiera niebezpieczne linki i nie został opublikowany.";
+            }
             
-            if (!$warning) {
+            if (!$warning && !$is_malicious) {
                 header("Location: topic.php?id=$idt&msg=created");
                 exit();
             }
