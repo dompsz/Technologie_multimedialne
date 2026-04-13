@@ -70,6 +70,15 @@ $stmt_w = $conn->prepare("
 ");
 $stmt_w->execute([$idt]);
 $watki = $stmt_w->fetchAll();
+
+// Obsługa usuwania (Mod/Admin)
+if (isset($_GET['delete_thread']) && isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2) {
+    $del_id = (int)$_GET['delete_thread'];
+    $stmt_del = $conn->prepare("DELETE FROM watki WHERE idw = ? OR id_rodzic = ?");
+    $stmt_del->execute([$del_id, $del_id]);
+    header("Location: topic.php?id=$idt&msg=deleted");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -148,6 +157,9 @@ $watki = $stmt_w->fetchAll();
                         <th>Temat / Autor</th>
                         <th class="text-center">Odpowiedzi</th>
                         <th class="text-end">Ostatnia aktywność</th>
+                        <?php if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2): ?>
+                        <th class="text-end">Akcja</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -167,6 +179,11 @@ $watki = $stmt_w->fetchAll();
                             <td class="text-end text-secondary small">
                                 <?php echo $w['last_activity']; ?>
                             </td>
+                            <?php if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2): ?>
+                            <td class="text-end">
+                                <a href="topic.php?id=<?php echo $idt; ?>&delete_thread=<?php echo $w['idw']; ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Trwale usunąć ten wątek wraz z odpowiedziami?')">Usuń</a>
+                            </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (empty($watki)): ?>

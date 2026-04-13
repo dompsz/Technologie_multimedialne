@@ -63,6 +63,36 @@ $stmt_r = $conn->prepare("
 ");
 $stmt_r->execute([$idw]);
 $replies = $stmt_r->fetchAll();
+
+// --- LOGIKA MODERACJI (TYLKO DLA MOD/ADMIN) ---
+if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2) {
+    // Usuwanie posta
+    if (isset($_GET['delete_post'])) {
+        $del_id = (int)$_GET['delete_post'];
+        $stmt_del = $conn->prepare("DELETE FROM watki WHERE idw = ? OR id_rodzic = ?");
+        $stmt_del->execute([$del_id, $del_id]);
+        
+        // Jeśli usunięto główny wątek, wróć do listy tematów
+        if ($del_id == $idw) {
+            header("Location: topic.php?id=" . $main_post['idt']);
+        } else {
+            header("Location: thread.php?id=$idw&msg=deleted");
+        }
+        exit();
+    }
+
+    // Banowanie autora
+    if (isset($_POST['ban_author'])) {
+        $target_uid = (int)$_POST['user_id'];
+        $duration = $_POST['duration'];
+        $ban_until = ($duration == '1h') ? date('Y-m-d H:i:s', strtotime('+1 hour')) : '2099-12-31 23:59:59';
+        
+        $stmt_ban = $conn->prepare("UPDATE uzytkownicy SET ban_do = ?, powod_blokady = 'Naruszenie regulaminu' WHERE idu = ?");
+        $stmt_ban->execute([$ban_until, $target_uid]);
+        header("Location: thread.php?id=$idw&msg=banned");
+        exit();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -117,7 +147,20 @@ $replies = $stmt_r->fetchAll();
                 <div class="col-md-10 d-flex flex-column">
                     <div class="post-header d-flex justify-content-between">
                         <small class="text-secondary">Opublikowano: <?php echo $main_post['datagodzina']; ?></small>
-                        <small class="text-secondary">#1</small>
+                        <div class="d-flex align-items-center gap-2">
+                            <?php if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2): ?>
+                                <a href="thread.php?id=<?php echo $idw; ?>&delete_post=<?php echo $main_post['idw']; ?>" class="btn btn-xxs btn-outline-danger py-0 px-2" style="font-size:0.7rem;" onclick="return confirm('Usunąć cały wątek?')">Usuń Wątek</a>
+                                <form method="POST" class="d-flex gap-1 align-items-center" style="margin:0;">
+                                    <input type="hidden" name="user_id" value="<?php echo $main_post['idu']; ?>">
+                                    <select name="duration" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size:0.6rem; height:20px;">
+                                        <option value="1h">1h</option>
+                                        <option value="perm">Perm</option>
+                                    </select>
+                                    <button type="submit" name="ban_author" class="btn btn-xxs btn-danger py-0 px-1" style="font-size:0.6rem; height:20px;">BAN</button>
+                                </form>
+                            <?php endif; ?>
+                            <small class="text-secondary">#1</small>
+                        </div>
                     </div>
                     <div class="post-body">
                         <?php echo nl2br(htmlspecialchars($main_post['tresc'])); ?>
@@ -138,7 +181,20 @@ $replies = $stmt_r->fetchAll();
                     <div class="col-md-10 d-flex flex-column">
                         <div class="post-header d-flex justify-content-between">
                             <small class="text-secondary">Odpowiedź: <?php echo $r['datagodzina']; ?></small>
-                            <small class="text-secondary">#<?php echo $index + 2; ?></small>
+                            <div class="d-flex align-items-center gap-2">
+                                <?php if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2): ?>
+                                    <a href="thread.php?id=<?php echo $idw; ?>&delete_post=<?php echo $r['idw']; ?>" class="btn btn-xxs btn-outline-danger py-0 px-2" style="font-size:0.7rem;" onclick="return confirm('Usunąć tę odpowiedź?')">Usuń</a>
+                                    <form method="POST" class="d-flex gap-1 align-items-center" style="margin:0;">
+                                        <input type="hidden" name="user_id" value="<?php echo $r['idu']; ?>">
+                                        <select name="duration" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size:0.6rem; height:20px;">
+                                            <option value="1h">1h</option>
+                                            <option value="perm">Perm</option>
+                                        </select>
+                                        <button type="submit" name="ban_author" class="btn btn-xxs btn-danger py-0 px-1" style="font-size:0.6rem; height:20px;">BAN</button>
+                                    </form>
+                                <?php endif; ?>
+                                <small class="text-secondary">#<?php echo $index + 2; ?></small>
+                            </div>
                         </div>
                         <div class="post-body">
                             <?php echo nl2br(htmlspecialchars($r['tresc'])); ?>
