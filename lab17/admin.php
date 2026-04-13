@@ -32,11 +32,12 @@ if (isset($_POST['add_censure'])) {
     }
 }
 
-// 3. Usuwanie/Blokowanie postów
-if (isset($_GET['block_post'])) {
-    $idw = (int)$_GET['block_post'];
-    $stmt = $conn->prepare("UPDATE watki SET stan = 0 WHERE idw = ?");
-    $stmt->execute([$idw]);
+// 3. Usuwanie postów
+if (isset($_GET['delete_post'])) {
+    $idw = (int)$_GET['delete_post'];
+    // Usuwamy post (jeśli to wątek główny, odpowiedzi zostaną, chyba że dodasz kaskadę - na razie usuwamy konkretny ID)
+    $stmt = $conn->prepare("DELETE FROM watki WHERE idw = ? OR id_rodzic = ?");
+    $stmt->execute([$idw, $idw]);
 }
 
 // 4. Zmiana uprawnień (tylko Admin)
@@ -252,14 +253,37 @@ $recent_posts = $stmt_posts->fetchAll();
                                     <?php foreach ($recent_posts as $p): ?>
                                         <tr>
                                             <td><?php echo $p['datagodzina']; ?></td>
-                                            <td class="fw-bold"><?php echo htmlspecialchars($p['login']); ?></td>
+                                            <td class="fw-bold">
+                                                <?php echo htmlspecialchars($p['login']); ?>
+                                                <?php 
+                                                    $author_ban = isUserBanned($p['idu'], $conn);
+                                                    if($author_ban) echo '<br><span class="badge bg-danger" style="font-size:0.6rem;">ZBANOWANY</span>';
+                                                ?>
+                                            </td>
                                             <td><small class="text-secondary">[<?php echo htmlspecialchars($p['nazwa_tematu']); ?>]</small><br><?php echo htmlspecialchars($p['tytul'] ?: '(odpowiedź)'); ?></td>
                                             <td><?php echo htmlspecialchars(mb_substr($p['tresc'], 0, 100)); ?>...</td>
                                             <td><?php echo $p['stan'] == 1 ? '<span class="text-success">Aktywny</span>' : '<span class="text-danger">Zablokowany</span>'; ?></td>
                                             <td>
-                                                <?php if ($p['stan'] == 1): ?>
-                                                    <a href="admin.php?block_post=<?php echo $p['idw']; ?>" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Zablokować ten post?')">Blokuj</a>
-                                                <?php endif; ?>
+                                                <div class="d-flex flex-column gap-1">
+                                                    <!-- Usuwanie posta -->
+                                                    <a href="admin.php?delete_post=<?php echo $p['idw']; ?>" class="btn btn-sm btn-danger py-0" style="font-size: 0.7rem;" onclick="return confirm('Trwale USUNĄĆ ten post?')">Usuń Post</a>
+                                                    
+                                                    <hr class="my-1 border-secondary">
+                                                    
+                                                    <!-- Szybki BAN dla autora -->
+                                                    <form method="POST" class="d-flex flex-column gap-1">
+                                                        <input type="hidden" name="user_id" value="<?php echo $p['idu']; ?>">
+                                                        <div class="d-flex gap-1">
+                                                            <select name="duration" class="form-select form-select-sm bg-dark text-white border-secondary py-0" style="font-size: 0.6rem;">
+                                                                <option value="1m">1m</option>
+                                                                <option value="10m">10m</option>
+                                                                <option value="1h">1h</option>
+                                                                <option value="perm">Perm</option>
+                                                            </select>
+                                                            <button type="submit" name="ban_user" class="btn btn-sm btn-outline-danger py-0" style="font-size: 0.6rem;">BAN</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
