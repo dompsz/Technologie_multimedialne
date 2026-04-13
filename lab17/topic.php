@@ -36,11 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_thread'])) {
             $f_tresc = filterContent($tresc, $conn);
             
             $total_profanity = $f_tytul['profanity_count'] + $f_tresc['profanity_count'];
+            $is_malicious = $f_tytul['malicious_found'] || $f_tresc['malicious_found'];
             
-            if ($total_profanity > 0) {
+            if ($total_profanity > 0 || $is_malicious) {
                 // Nakładamy karę
-                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $total_profanity, $conn);
-                $warning = "⚠️ Wykryto niedozwolone słowa! Twoje konto zostało zablokowane do: " . $punishment['ban_until'] . " (Incydent #" . $punishment['new_offenses'] . ")";
+                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $total_profanity, $conn, $is_malicious);
+                $warning = "⚠️ Wykryto niedozwolone treści! Twoje konto zostało zablokowane do: " . $punishment['ban_until'] . " (Powód: " . $punishment['reason'] . ")";
                 // Odświeżamy info o banie
                 $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
             }

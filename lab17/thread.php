@@ -36,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_reply'])) {
         } else {
             $f_tresc = filterContent($tresc, $conn);
             
-            if ($f_tresc['profanity_count'] > 0) {
-                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $f_tresc['profanity_count'], $conn);
-                $warning = "⚠️ Wykryto wulgaryzmy! Konto zablokowane do: " . $punishment['ban_until'];
+            if ($f_tresc['profanity_count'] > 0 || $f_tresc['malicious_found']) {
+                $punishment = handleProfanityOffense($_SESSION['lab17_user_id'], $f_tresc['profanity_count'], $conn, $f_tresc['malicious_found']);
+                $warning = "⚠️ Wykryto niedozwolone treści! Konto zablokowane do: " . $punishment['ban_until'] . " (Powód: " . $punishment['reason'] . ")";
                 $ban_info = isUserBanned($_SESSION['lab17_user_id'], $conn);
             }
 
