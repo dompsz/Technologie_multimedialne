@@ -102,6 +102,11 @@
                 <h2>Zadanie 16</h2>
                 <p>System CMS</p>
             </a>
+            <a href="lab17/index.php" class="tile">
+                <div class="lab-icon">💬</div>
+                <h2>Zadanie 17</h2>
+                <p>Forum Dyskusyjne</p>
+            </a>
         </div>
     </div>
 </body>
