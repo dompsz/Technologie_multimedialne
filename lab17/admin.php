@@ -59,7 +59,7 @@ if (isset($_POST['ban_user'])) {
     elseif ($duration == '10m') $ban_until = date('Y-m-d H:i:s', strtotime('+10 minutes'));
     elseif ($duration == '1h') $ban_until = date('Y-m-d H:i:s', strtotime('+1 hour'));
     elseif ($duration == '1d') $ban_until = date('Y-m-d H:i:s', strtotime('+1 day'));
-    elseif ($duration == 'perm') $ban_until = '2099-12-31 23:59:59';
+    elseif ($duration == 'perm') $ban_until = '2037-12-31 23:59:59';
 
     if ($ban_until) {
         $stmt = $conn->prepare("UPDATE uzytkownicy SET ban_do = ?, powod_blokady = ? WHERE idu = ?");

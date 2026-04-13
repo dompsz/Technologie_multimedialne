@@ -49,8 +49,8 @@ function handleProfanityOffense($user_id, $profanity_count, $conn) {
     } elseif ($new_offenses == 2) {
         $ban_until = date('Y-m-d H:i:s', strtotime('+2 minutes'));
     } else {
-        // 3 i więcej incydentów = Perm (rok 2099)
-        $ban_until = '2099-12-31 23:59:59';
+        // 3 i więcej incydentów = Perm (rok 2037 - bezpieczny dla TIMESTAMP)
+        $ban_until = '2037-12-31 23:59:59';
         $reason = "STAŁA BLOKADA: Wielokrotne łamanie regulaminu (wulgaryzmy)";
     }
 

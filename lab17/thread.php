@@ -85,7 +85,7 @@ if (isset($_SESSION['lab17_role']) && $_SESSION['lab17_role'] >= 2) {
     if (isset($_POST['ban_author'])) {
         $target_uid = (int)$_POST['user_id'];
         $duration = $_POST['duration'];
-        $ban_until = ($duration == '1h') ? date('Y-m-d H:i:s', strtotime('+1 hour')) : '2099-12-31 23:59:59';
+        $ban_until = ($duration == '1h') ? date('Y-m-d H:i:s', strtotime('+1 hour')) : '2037-12-31 23:59:59';
         
         $stmt_ban = $conn->prepare("UPDATE uzytkownicy SET ban_do = ?, powod_blokady = 'Naruszenie regulaminu' WHERE idu = ?");
         $stmt_ban->execute([$ban_until, $target_uid]);
