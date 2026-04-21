@@ -42,7 +42,7 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
             <a class="navbar-brand fw-bold text-accent" href="index.php">🖼️ GALERIA LAB 18</a>
             <div class="d-flex align-items-center">
                 <a href="index.php" class="btn btn-outline-light btn-sm me-2">Wróć do list galerii</a>
-                <?php if (isset($_SESSION['lab18_role']) && $_SESSION['lab18_role'] === 'admin'): ?>
+                <?php if ((isset($_SESSION['lab18_role']) && $_SESSION['lab18_role'] === 'admin') || (isset($_SESSION['lab18_login']) && $_SESSION['lab18_login'] === 'admin')): ?>
                     <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Admina</a>
                 <?php endif; ?>
                 <?php if ($user_id): ?>

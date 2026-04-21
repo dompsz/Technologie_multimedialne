@@ -30,7 +30,7 @@ $user_role = $_SESSION['lab18_role'] ?? 'guest';
             <div class="d-flex align-items-center">
                 <?php if ($user_id): ?>
                     <span class="text-secondary me-3">Witaj, <strong><?php echo htmlspecialchars($_SESSION['lab18_login']); ?></strong></span>
-                    <?php if ($user_role === 'admin'): ?>
+                    <?php if ($user_role === 'admin' || $_SESSION['lab18_login'] === 'admin'): ?>
                         <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Admina</a>
                     <?php endif; ?>
                     <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
