@@ -10,10 +10,7 @@ function loadEnv($path) {
         
         $parts = explode('=', $line, 2);
         if (count($parts) === 2) {
-            $key = trim($parts[0]);
-            $val = trim($parts[1]);
-            $_ENV[$key] = $val;
-            $_SERVER[$key] = $val;
+            $_ENV[trim($parts[0])] = trim($parts[1]);
         }
     }
     return true;
