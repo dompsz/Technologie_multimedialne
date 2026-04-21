@@ -1,16 +1,10 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 session_start();
 require_once 'db_config.php';
 
-try {
-    // Pobierz wszystkie galerie
-    $stmt = $conn->query("SELECT g.*, u.login as autor, (SELECT COUNT(*) FROM zdjecia z WHERE z.idg = g.idg) as foto_count FROM galerie g JOIN uzytkownicy u ON g.idu = u.idu");
-    $galerie = $stmt->fetchAll();
-} catch (PDOException $e) {
-    die("Błąd bazy danych: " . $e->getMessage() . "<br>Upewnij się, że tabele z pliku db_setup.sql zostały zaimportowane do bazy pszczolk_z18.");
-}
+// Pobierz wszystkie galerie
+$stmt = $conn->query("SELECT g.*, u.login as autor, (SELECT COUNT(*) FROM zdjecia z WHERE z.idg = g.idg) as foto_count FROM galerie g JOIN uzytkownicy u ON g.idu = u.idu");
+$galerie = $stmt->fetchAll();
 
 $user_id = $_SESSION['lab18_user_id'] ?? null;
 $user_role = $_SESSION['lab18_role'] ?? 'guest';
