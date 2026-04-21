@@ -14,7 +14,6 @@ function loadEnv($path) {
             $val = trim($parts[1]);
             $_ENV[$key] = $val;
             $_SERVER[$key] = $val;
-            putenv("$key=$val");
         }
     }
     return true;
