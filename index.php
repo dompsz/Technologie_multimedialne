@@ -107,6 +107,11 @@
                 <h2>Zadanie 17</h2>
                 <p>Forum Dyskusyjne</p>
             </a>
+            <a href="lab18/index.php" class="tile">
+                <div class="lab-icon">🖼️</div>
+                <h2>Zadanie 18</h2>
+                <p>Internetowa Galeria Zdjęć</p>
+            </a>
         </div>
     </div>
 </body>
