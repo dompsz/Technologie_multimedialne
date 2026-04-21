@@ -45,6 +45,10 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
     </nav>
 
     <div class="container mt-5 pb-5">
+        <?php if (isset($_GET['msg']) && $_GET['msg'] == 'photo_added'): ?>
+            <div class="alert alert-success">✓ Zdjęcie zostało dodane pomyślnie.</div>
+        <?php endif; ?>
+        
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
                 <h1 class="mb-1"><?php echo htmlspecialchars($galeria['nazwa_galerii']); ?></h1>

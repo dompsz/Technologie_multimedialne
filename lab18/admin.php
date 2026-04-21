@@ -1,156 +1,119 @@
 <?php
 session_start();
 require_once 'db_config.php';
+require_once 'functions.php';
 
 // Zabezpieczenie - tylko dla administratorów
 if (!isset($_SESSION['lab18_user_id']) || $_SESSION['lab18_role'] !== 'admin') {
     die("Brak uprawnień administratora.");
 }
 
-// Obsługa akcji administratora
+$user_role = $_SESSION['lab18_role'];
+
+// --- OBSŁUGA AKCJI ---
+
+// 1. Zarządzanie Galeriami
+if (isset($_POST['add_gallery'])) {
+    $nazwa = trim($_POST['nazwa_galerii']);
+    $komercyjna = isset($_POST['czy_komercyjna']) ? 1 : 0;
+    if (!empty($nazwa)) {
+        $stmt = $conn->prepare("INSERT INTO galerie (idu, nazwa_galerii, czy_komercyjna) VALUES (?, ?, ?)");
+        $stmt->execute([$_SESSION['lab18_user_id'], $nazwa, $komercyjna]);
+    }
+}
+
+// 2. Zarządzanie cenzurą
+if (isset($_POST['add_censure'])) {
+    $slowo = trim($_POST['slowo']);
+    $zamiennik = trim($_POST['zamiennik']);
+    if (!empty($slowo)) {
+        $stmt = $conn->prepare("INSERT INTO cenzura (slowo_zakazane, zamiennik) VALUES (?, ?)");
+        $stmt->execute([$slowo, $zamiennik ?: '***']);
+    }
+}
+
+// 3. Usuwanie obiektów
 if (isset($_GET['delete_gallery'])) {
     $idg = (int)$_GET['delete_gallery'];
     $stmt = $conn->prepare("DELETE FROM galerie WHERE idg = ?");
     $stmt->execute([$idg]);
-    header("Location: admin.php?msg=gallery_deleted");
-    exit();
 }
-
 if (isset($_GET['delete_photo'])) {
     $idz = (int)$_GET['delete_photo'];
-    // Pobierz nazwę pliku, aby go usunąć z dysku
-    $stmt_p = $conn->prepare("SELECT plik FROM zdjecia WHERE idz = ?");
-    $stmt_p->execute([$idz]);
-    $file = $stmt_p->fetchColumn();
-    
-    if ($file && file_exists('uploads/' . $file)) {
-        unlink('uploads/' . $file);
-    }
-
     $stmt = $conn->prepare("DELETE FROM zdjecia WHERE idz = ?");
     $stmt->execute([$idz]);
-    header("Location: admin.php?msg=photo_deleted");
-    exit();
+}
+if (isset($_GET['delete_comment'])) {
+    $idk = (int)$_GET['delete_comment'];
+    $stmt = $conn->prepare("DELETE FROM komentarze WHERE idk = ?");
+    $stmt->execute([$idk]);
 }
 
-// Pobieranie danych
-$galerie = $conn->query("SELECT g.*, u.login FROM galerie g JOIN uzytkownicy u ON g.idu = u.idu ORDER BY g.idg DESC")->fetchAll();
-$zdjecia = $conn->query("SELECT z.*, g.nazwa_galerii, u.login FROM zdjecia z JOIN galerie g ON z.idg = g.idg JOIN uzytkownicy u ON z.idu = u.idu ORDER BY z.idz DESC LIMIT 50")->fetchAll();
-$uzytkownicy = $conn->query("SELECT * FROM uzytkownicy ORDER BY idu ASC")->fetchAll();
+// 4. Zmiana uprawnień
+if (isset($_POST['change_role'])) {
+    $idu = (int)$_POST['user_id'];
+    $new_role = $_POST['new_role'];
+    $stmt = $conn->prepare("UPDATE uzytkownicy SET rola = ? WHERE idu = ?");
+    $stmt->execute([$new_role, $idu]);
+}
+
+// --- POBIERANIE DANYCH ---
+$galerie = $conn->query("SELECT * FROM galerie ORDER BY idg DESC")->fetchAll();
+$cenzura = $conn->query("SELECT * FROM cenzura ORDER BY slowo_zakazane ASC")->fetchAll();
+$users = $conn->query("SELECT * FROM uzytkownicy ORDER BY rola DESC")->fetchAll();
+
+// Ostatnie zdjęcia i komentarze do moderacji
+$recent_photos = $conn->query("SELECT z.*, u.login, g.nazwa_galerii FROM zdjecia z JOIN uzytkownicy u ON z.idu = u.idu JOIN galerie g ON z.idg = g.idg ORDER BY z.datagodzina DESC LIMIT 10")->fetchAll();
+$recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k JOIN uzytkownicy u ON k.idu = u.idu JOIN zdjecia z ON k.idz = z.idz ORDER BY k.datagodzina DESC LIMIT 10")->fetchAll();
 
 ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Administratora - Galeria Lab 18</title>
+    <title>Panel Moderacji - Galeria Lab 18</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
         .admin-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 25px; overflow: hidden; }
         .card-header { background: rgba(255,193,7, 0.1); border-bottom: 1px solid #444; color: #ffc107; font-weight: bold; padding: 12px 20px; }
         .table { color: #ccc; }
+        .btn-xxs { padding: 0px 5px; font-size: 0.65rem; }
     </style>
 </head>
 <body class="bg-dark text-light">
     <nav class="navbar navbar-dark bg-black border-bottom border-warning mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand text-warning fw-bold" href="index.php">🛡️ PANEL ADMINA LAB 18</a>
+            <a class="navbar-brand text-warning fw-bold" href="index.php">🛡️ PANEL MODERACJI LAB 18</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">Powrót do Galerii</a>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
         <div class="row">
-            <!-- Zarządzanie Galeriami -->
-            <div class="col-lg-6">
+            
+            <!-- Galerie -->
+            <div class="col-lg-4">
                 <div class="admin-card">
                     <div class="card-header">📂 Zarządzanie Galeriami</div>
-                    <div class="card-body p-0">
-                        <table class="table table-dark table-striped table-hover mb-0 small">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nazwa</th>
-                                    <th>Autor</th>
-                                    <th>Typ</th>
-                                    <th>Akcja</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($galerie as $g): ?>
-                                    <tr>
-                                        <td><?php echo $g['idg']; ?></td>
-                                        <td><?php echo htmlspecialchars($g['nazwa_galerii']); ?></td>
-                                        <td><?php echo htmlspecialchars($g['login']); ?></td>
-                                        <td><?php echo $g['czy_komercyjna'] ? '<span class="text-warning">Komercyjna</span>' : 'Zwykła'; ?></td>
-                                        <td>
-                                            <a href="admin.php?delete_gallery=<?php echo $g['idg']; ?>" class="btn btn-xxs btn-outline-danger p-0 px-2" style="font-size:0.7rem;" onclick="return confirm('Usunąć galerię wraz ze wszystkimi zdjęciami?')">Usuń</a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Zarządzanie Użytkownikami -->
-            <div class="col-lg-6">
-                <div class="admin-card">
-                    <div class="card-header">👥 Użytkownicy</div>
-                    <div class="card-body p-0">
-                        <table class="table table-dark table-striped table-hover mb-0 small">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Login</th>
-                                    <th>Rola</th>
-                                    <th>Rejestracja</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($uzytkownicy as $u): ?>
-                                    <tr>
-                                        <td><?php echo $u['idu']; ?></td>
-                                        <td class="fw-bold"><?php echo htmlspecialchars($u['login']); ?></td>
-                                        <td><span class="badge <?php echo $u['rola'] === 'admin' ? 'bg-danger' : 'bg-primary'; ?>"><?php echo $u['rola']; ?></span></td>
-                                        <td class="text-secondary"><?php echo $u['data_rejestracji']; ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Ostatnie Zdjęcia -->
-            <div class="col-12">
-                <div class="admin-card">
-                    <div class="card-header">🖼️ Ostatnio Dodane Zdjęcia (Moderacja)</div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-dark table-striped table-hover mb-0 small">
-                                <thead>
-                                    <tr>
-                                        <th>Miniatura</th>
-                                        <th>Tytuł</th>
-                                        <th>Galeria</th>
-                                        <th>Autor</th>
-                                        <th>Data</th>
-                                        <th>Akcja</th>
-                                    </tr>
-                                </thead>
+                    <div class="card-body">
+                        <form method="POST" class="mb-4">
+                            <input type="hidden" name="add_gallery" value="1">
+                            <input type="text" name="nazwa_galerii" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Nazwa galerii" required>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="czy_komercyjna" id="comCheck">
+                                <label class="form-check-label small" for="comCheck">Komercyjna (Znaki wodne)</label>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-success w-100">Dodaj Galerię</button>
+                        </form>
+                        <div style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-dark">
                                 <tbody>
-                                    <?php foreach ($zdjecia as $z): ?>
+                                    <?php foreach ($galerie as $g): ?>
                                         <tr>
-                                            <td><img src="uploads/<?php echo $z['plik']; ?>" style="height: 40px; width: 40px; object-fit: cover; border-radius: 4px;"></td>
-                                            <td><?php echo htmlspecialchars($z['tytul']); ?></td>
-                                            <td><?php echo htmlspecialchars($z['nazwa_galerii']); ?></td>
-                                            <td><?php echo htmlspecialchars($z['login']); ?></td>
-                                            <td><?php echo $z['datagodzina']; ?></td>
-                                            <td>
-                                                <a href="admin.php?delete_photo=<?php echo $z['idz']; ?>" class="btn btn-sm btn-danger py-0" style="font-size: 0.7rem;" onclick="return confirm('Trwale usunąć to zdjęcie?')">Usuń</a>
+                                            <td class="small"><?php echo htmlspecialchars($g['nazwa_galerii']); ?></td>
+                                            <td class="text-end">
+                                                <a href="admin.php?delete_gallery=<?php echo $g['idg']; ?>" class="btn btn-xxs btn-danger" onclick="return confirm('Usunąć galerię?')">Usuń</a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -160,6 +123,106 @@ $uzytkownicy = $conn->query("SELECT * FROM uzytkownicy ORDER BY idu ASC")->fetch
                     </div>
                 </div>
             </div>
+
+            <!-- Cenzura -->
+            <div class="col-lg-4">
+                <div class="admin-card">
+                    <div class="card-header">🚫 Zarządzanie Cenzurą</div>
+                    <div class="card-body">
+                        <form method="POST" class="mb-4">
+                            <input type="hidden" name="add_censure" value="1">
+                            <div class="row g-2">
+                                <div class="col-6"><input type="text" name="slowo" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Słowo" required></div>
+                                <div class="col-6"><input type="text" name="zamiennik" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Zamiennik"></div>
+                                <div class="col-12"><button type="submit" class="btn btn-sm btn-primary w-100">Dodaj do filtra</button></div>
+                            </div>
+                        </form>
+                        <div style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-dark">
+                                <thead><tr><th>Słowo</th><th>Zamiennik</th></tr></thead>
+                                <tbody>
+                                    <?php foreach ($cenzura as $c): ?>
+                                        <tr><td><?php echo htmlspecialchars($c['slowo_zakazane']); ?></td><td><?php echo htmlspecialchars($c['zamiennik']); ?></td></tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Użytkownicy -->
+            <div class="col-lg-4">
+                <div class="admin-card">
+                    <div class="card-header">👥 Użytkownicy</div>
+                    <div class="card-body p-0">
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-sm table-dark mb-0">
+                                <thead><tr><th>User</th><th>Rola</th><th>Akcja</th></tr></thead>
+                                <tbody>
+                                    <?php foreach ($users as $u): ?>
+                                        <tr class="border-secondary align-middle">
+                                            <td class="small fw-bold"><?php echo htmlspecialchars($u['login']); ?></td>
+                                            <td><?php echo getRoleLabel($u['rola']); ?></td>
+                                            <td>
+                                                <form method="POST" class="d-flex gap-1">
+                                                    <input type="hidden" name="user_id" value="<?php echo $u['idu']; ?>">
+                                                    <select name="new_role" class="form-select form-select-sm bg-dark text-white border-secondary py-0 px-1" style="font-size: 0.6rem; width: auto;">
+                                                        <option value="user" <?php echo $u['rola']=='user'?'selected':''; ?>>User</option>
+                                                        <option value="admin" <?php echo $u['rola']=='admin'?'selected':''; ?>>Admin</option>
+                                                    </select>
+                                                    <button type="submit" name="change_role" class="btn btn-xxs btn-outline-warning">OK</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posty (Zdjęcia i Komentarze) -->
+            <div class="col-12">
+                <div class="admin-card">
+                    <div class="card-header">📜 Ostatnia aktywność (Moderacja)</div>
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-md-6 border-end border-secondary">
+                                <div class="p-2 border-bottom border-secondary bg-black small fw-bold text-center">Ostatnie zdjęcia</div>
+                                <table class="table table-sm table-dark table-striped mb-0 small">
+                                    <tbody>
+                                        <?php foreach ($recent_photos as $z): ?>
+                                            <tr class="align-middle">
+                                                <td><img src="uploads/<?php echo $z['plik']; ?>" style="width:30px; height:30px; object-fit:cover;"></td>
+                                                <td><?php echo htmlspecialchars($z['tytul']); ?></td>
+                                                <td><small class="text-secondary"><?php echo htmlspecialchars($z['login']); ?></small></td>
+                                                <td class="text-end"><a href="admin.php?delete_photo=<?php echo $z['idz']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom border-secondary bg-black small fw-bold text-center">Ostatnie komentarze</div>
+                                <table class="table table-sm table-dark table-striped mb-0 small">
+                                    <tbody>
+                                        <?php foreach ($recent_comments as $k): ?>
+                                            <tr class="align-middle">
+                                                <td class="fw-bold"><?php echo htmlspecialchars($k['login']); ?></td>
+                                                <td class="text-truncate" style="max-width: 150px;"><?php echo htmlspecialchars($k['tresc']); ?></td>
+                                                <td class="text-end"><a href="admin.php?delete_comment=<?php echo $k['idk']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </body>

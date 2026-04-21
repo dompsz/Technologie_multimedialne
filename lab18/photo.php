@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'db_config.php';
+require_once 'functions.php';
 
 $idz = (int)($_GET['id'] ?? 0);
 
