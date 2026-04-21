@@ -37,6 +37,7 @@ $stmt_next->execute([$photo['idg'], $idz]);
 $next_id = $stmt_next->fetchColumn();
 
 $user_id = $_SESSION['lab18_user_id'] ?? null;
+$is_author = ($user_id && ($photo['idu'] == $user_id || $_SESSION['lab18_login'] === 'admin'));
 
 // Czy użytkownik już ocenił?
 $user_rating = 0;
@@ -54,14 +55,20 @@ if ($user_id) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        .photo-full { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .photo-full { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: filter 0.5s; }
         .photo-container { position: relative; display: inline-block; width: 100%; text-align: center; }
-        .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 5rem; color: rgba(255,255,255,0.2); font-weight: bold; pointer-events: none; white-space: nowrap; text-transform: uppercase; }
+        .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 5rem; color: rgba(255,255,255,0.1); font-weight: bold; pointer-events: none; white-space: nowrap; text-transform: uppercase; z-index: 5; }
         .comment-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
         .rating-star { font-size: 1.5rem; cursor: pointer; color: #444; transition: color 0.2s; }
         .rating-star.active { color: #ffc107; }
-        .rating-star:hover { color: #ffdb58; }
         .text-accent { color: var(--accent-color) !important; }
+        
+        /* Klasy filtrów */
+        .filter-none { filter: none; }
+        .filter-mono { filter: grayscale(100%); }
+        .filter-sepia { filter: sepia(100%); }
+        
+        #editFilterPreview { max-width: 100%; height: 120px; object-fit: cover; border: 1px solid #444; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -85,7 +92,7 @@ if ($user_id) {
             <!-- Kolumna ze zdjęciem -->
             <div class="col-lg-8">
                 <div class="photo-container mb-4">
-                    <img src="uploads/<?php echo $photo['plik']; ?>" class="photo-full" alt="<?php echo htmlspecialchars($photo['tytul']); ?>">
+                    <img src="uploads/<?php echo $photo['plik']; ?>" class="photo-full filter-<?php echo $photo['filtr'] ?? 'none'; ?>" alt="<?php echo htmlspecialchars($photo['tytul']); ?>">
                     <?php if ($photo['czy_komercyjna']): ?>
                         <div class="watermark-overlay">LAB 18 SAMPLE</div>
                     <?php endif; ?>
@@ -119,10 +126,16 @@ if ($user_id) {
             <!-- Kolumna z interakcjami -->
             <div class="col-lg-4">
                 <div class="card bg-dark text-light border-secondary p-4 mb-4">
-                    <h5>Informacje</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Informacje</h5>
+                        <?php if ($is_author): ?>
+                            <button class="btn btn-xxs btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPhotoModal">Edytuj</button>
+                        <?php endif; ?>
+                    </div>
                     <hr class="border-secondary">
                     <p class="small mb-1">Autor: <span class="text-accent"><?php echo htmlspecialchars($photo['autor']); ?></span></p>
                     <p class="small mb-1">Galeria: <span class="text-accent"><?php echo htmlspecialchars($photo['nazwa_galerii']); ?></span></p>
+                    <p class="small mb-1">Filtr: <span class="text-info"><?php echo $photo['filtr'] ?? 'none'; ?></span></p>
                     <p class="small mb-3">Data: <?php echo $photo['datagodzina']; ?></p>
 
                     <?php if ($user_id): ?>
@@ -171,14 +184,60 @@ if ($user_id) {
                             </div>
                             <button type="submit" class="btn btn-sm btn-accent w-100">Dodaj Komentarz</button>
                         </form>
-                    <?php else: ?>
-                        <div class="alert alert-info bg-dark border-info text-info small p-2 mt-3">
-                            <a href="login.php" class="text-info fw-bold">Zaloguj się</a>, aby oceniać i komentować.
-                        </div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal edycji zdjęcia -->
+    <?php if ($is_author): ?>
+    <div class="modal fade" id="editPhotoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <form action="actions.php" method="POST">
+                    <input type="hidden" name="action" value="edit_photo">
+                    <input type="hidden" name="idz" value="<?php echo $idz; ?>">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Edytuj zdjęcie</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tytuł</label>
+                            <input type="text" name="tytul" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($photo['tytul']); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Opis</label>
+                            <textarea name="opis" class="form-control bg-black text-white border-secondary" rows="3"><?php echo htmlspecialchars($photo['opis']); ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Zmień filtr</label>
+                            <select name="filtr" id="editFilterSelect" class="form-select bg-black text-white border-secondary mb-2">
+                                <option value="none" <?php echo $photo['filtr']=='none'?'selected':''; ?>>Brak filtra</option>
+                                <option value="mono" <?php echo $photo['filtr']=='mono'?'selected':''; ?>>Monochromatyczny</option>
+                                <option value="sepia" <?php echo $photo['filtr']=='sepia'?'selected':''; ?>>Sepia</option>
+                            </select>
+                            <img id="editFilterPreview" src="uploads/<?php echo $photo['plik']; ?>" class="filter-<?php echo $photo['filtr']; ?>" alt="Podgląd">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-accent">Zapisz zmiany</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('editFilterSelect').addEventListener('change', function() {
+            const preview = document.getElementById('editFilterPreview');
+            preview.className = '';
+            if (this.value !== 'none') preview.classList.add('filter-' + this.value);
+        });
+    </script>
+    <?php endif; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

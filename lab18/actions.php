@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idg = (int)$_POST['idg'];
             $tytul = trim($_POST['tytul']);
             $opis = trim($_POST['opis']);
+            $filtr = $_POST['filtr'] ?? 'none';
             
             if (isset($_FILES['plik'])) {
                 if ($_FILES['plik']['error'] !== UPLOAD_ERR_OK) {
@@ -51,15 +52,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 
                 if (move_uploaded_file($_FILES['plik']['tmp_name'], $upload_path)) {
-                    $stmt = $conn->prepare("INSERT INTO zdjecia (idg, idu, tytul, opis, plik) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$idg, $user_id, $tytul, $opis, $filename]);
+                    $stmt = $conn->prepare("INSERT INTO zdjecia (idg, idu, tytul, opis, plik, filtr) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$idg, $user_id, $tytul, $opis, $filename, $filtr]);
                     header("Location: gallery.php?id=$idg&msg=photo_added");
                     exit();
                 } else {
-                    die("Nie udało się zapisać pliku na serwerze. Sprawdź uprawnienia folderu uploads/.");
+                    die("Nie udało się zapisać pliku na serwerze.");
                 }
+            }
+        }
+
+        if ($action === 'edit_photo') {
+            $idz = (int)$_POST['idz'];
+            $tytul = trim($_POST['tytul']);
+            $opis = trim($_POST['opis']);
+            $filtr = $_POST['filtr'] ?? 'none';
+
+            // Sprawdzenie uprawnień (tylko autor lub admin)
+            $stmt_check = $conn->prepare("SELECT idu, idg FROM zdjecia WHERE idz = ?");
+            $stmt_check->execute([$idz]);
+            $photo_info = $stmt_check->fetch();
+
+            if ($photo_info && ($photo_info['idu'] == $user_id || $_SESSION['lab18_login'] === 'admin')) {
+                $stmt = $conn->prepare("UPDATE zdjecia SET tytul = ?, opis = ?, filtr = ? WHERE idz = ?");
+                $stmt->execute([$tytul, $opis, $filtr, $idz]);
+                header("Location: photo.php?id=$idz&msg=updated");
+                exit();
             } else {
-                die("Brak pliku w żądaniu.");
+                die("Brak uprawnień do edycji tego zdjęcia.");
             }
         }
 
@@ -73,7 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: photo.php?id=$idz&msg=comment_added");
                 exit();
             }
-        }        if ($action === 'rate') {
+        }
+
+        if ($action === 'rate') {
             $idz = (int)$_POST['idz'];
             $ocena = (int)$_POST['ocena'];
             

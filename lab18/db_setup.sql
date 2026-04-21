@@ -1,8 +1,12 @@
 -- SQL dla Laboratorium 18 - Internetowa Galeria Zdjęć
 -- Baza danych: pszczolk_z18
 
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- 1. Tabela Użytkownicy
-CREATE TABLE IF NOT EXISTS `uzytkownicy` (
+DROP TABLE IF EXISTS `uzytkownicy`;
+CREATE TABLE `uzytkownicy` (
   `idu` int(11) NOT NULL AUTO_INCREMENT,
   `login` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `haslo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -13,7 +17,8 @@ CREATE TABLE IF NOT EXISTS `uzytkownicy` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Tabela Galerie
-CREATE TABLE IF NOT EXISTS `galerie` (
+DROP TABLE IF EXISTS `galerie`;
+CREATE TABLE `galerie` (
   `idg` int(11) NOT NULL AUTO_INCREMENT,
   `idu` int(11) NOT NULL,
   `nazwa_galerii` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -23,13 +28,15 @@ CREATE TABLE IF NOT EXISTS `galerie` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. Tabela Zdjęcia
-CREATE TABLE IF NOT EXISTS `zdjecia` (
+DROP TABLE IF EXISTS `zdjecia`;
+CREATE TABLE `zdjecia` (
   `idz` int(11) NOT NULL AUTO_INCREMENT,
   `idg` int(11) NOT NULL,
   `idu` int(11) NOT NULL,
   `tytul` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `opis` text COLLATE utf8mb4_unicode_ci,
   `plik` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `filtr` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'none',
   `datagodzina` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idz`),
   CONSTRAINT `fk_zdjecia_galerie` FOREIGN KEY (`idg`) REFERENCES `galerie` (`idg`) ON DELETE CASCADE,
@@ -37,7 +44,8 @@ CREATE TABLE IF NOT EXISTS `zdjecia` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Tabela Komentarze
-CREATE TABLE IF NOT EXISTS `komentarze` (
+DROP TABLE IF EXISTS `komentarze`;
+CREATE TABLE `komentarze` (
   `idk` int(11) NOT NULL AUTO_INCREMENT,
   `idz` int(11) NOT NULL,
   `idu` int(11) NOT NULL,
@@ -49,7 +57,8 @@ CREATE TABLE IF NOT EXISTS `komentarze` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Tabela Oceny
-CREATE TABLE IF NOT EXISTS `oceny` (
+DROP TABLE IF EXISTS `oceny`;
+CREATE TABLE `oceny` (
   `ido` int(11) NOT NULL AUTO_INCREMENT,
   `idz` int(11) NOT NULL,
   `idu` int(11) NOT NULL,
@@ -59,6 +68,8 @@ CREATE TABLE IF NOT EXISTS `oceny` (
   CONSTRAINT `fk_oceny_zdjecia` FOREIGN KEY (`idz`) REFERENCES `zdjecia` (`idz`) ON DELETE CASCADE,
   CONSTRAINT `fk_oceny_uzytkownicy` FOREIGN KEY (`idu`) REFERENCES `uzytkownicy` (`idu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- SEEDOWANIE DANYCH
 

@@ -31,9 +31,16 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
         .photo-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
         .photo-card:hover { transform: scale(1.02); border-color: var(--accent-color); }
         .thumb-container { height: 200px; overflow: hidden; background: #000; position: relative; }
-        .thumb-container img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-container img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
         .watermark { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.6rem; padding: 2px 5px; pointer-events: none; border-radius: 3px; }
         .text-accent { color: var(--accent-color) !important; }
+        
+        /* Klasy filtrów */
+        .filter-none { filter: none; }
+        .filter-mono { filter: grayscale(100%); }
+        .filter-sepia { filter: sepia(100%); }
+        
+        #filterPreview { max-width: 100%; height: 150px; object-fit: contain; background: #222; border: 1px solid #444; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -74,7 +81,7 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
                     <a href="photo.php?id=<?php echo $z['idz']; ?>" class="text-decoration-none">
                         <div class="photo-card">
                             <div class="thumb-container">
-                                <img src="uploads/<?php echo $z['plik']; ?>" alt="<?php echo htmlspecialchars($z['tytul']); ?>">
+                                <img src="uploads/<?php echo $z['plik']; ?>" class="filter-<?php echo $z['filtr'] ?? 'none'; ?>" alt="<?php echo htmlspecialchars($z['tytul']); ?>">
                                 <?php if ($galeria['czy_komercyjna']): ?>
                                     <div class="watermark">LAB 18 SAMPLE</div>
                                 <?php endif; ?>
@@ -101,7 +108,7 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
     <!-- Modal dodawania zdjęcia -->
     <?php if ($user_id): ?>
     <div class="modal fade" id="addPhotoModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-light border-secondary">
                 <form action="actions.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="add_photo">
@@ -111,27 +118,67 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Tytuł</label>
-                            <input type="text" name="tytul" class="form-control bg-black text-white border-secondary" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Opis</label>
-                            <textarea name="opis" class="form-control bg-black text-white border-secondary" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Plik obrazu</label>
-                            <input type="file" name="plik" class="form-control bg-black text-white border-secondary" accept="image/*" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tytuł</label>
+                                    <input type="text" name="tytul" class="form-control bg-black text-white border-secondary" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Opis</label>
+                                    <textarea name="opis" class="form-control bg-black text-white border-secondary" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Plik obrazu</label>
+                                    <input type="file" name="plik" id="fileInput" class="form-control bg-black text-white border-secondary" accept="image/*" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Wybierz filtr</label>
+                                <select name="filtr" id="filterSelect" class="form-select bg-black text-white border-secondary mb-3">
+                                    <option value="none">Brak filtra</option>
+                                    <option value="mono">Monochromatyczny (Czarno-biały)</option>
+                                    <option value="sepia">Sepia</option>
+                                </select>
+                                <label class="form-label d-block">Podgląd:</label>
+                                <div class="text-center bg-black p-2 rounded">
+                                    <img id="filterPreview" src="../assets/default-avatar.svg" alt="Podgląd">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-secondary">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
-                        <button type="submit" class="btn btn-accent">Wyślij</button>
+                        <button type="submit" class="btn btn-accent">Dodaj Zdjęcie</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const filterSelect = document.getElementById('filterSelect');
+        const filterPreview = document.getElementById('filterPreview');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    filterPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        filterSelect.addEventListener('change', function() {
+            filterPreview.className = '';
+            if (this.value !== 'none') {
+                filterPreview.classList.add('filter-' + this.value);
+            }
+        });
+    </script>
     <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
