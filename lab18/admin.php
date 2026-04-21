@@ -3,8 +3,8 @@ session_start();
 require_once 'db_config.php';
 require_once 'functions.php';
 
-// Zabezpieczenie - tylko dla administratorów
-if (!isset($_SESSION['lab18_user_id']) || $_SESSION['lab18_role'] !== 'admin') {
+// Zabezpieczenie - tylko dla administratorów (rola admin LUB login admin)
+if (!isset($_SESSION['lab18_user_id']) || ($_SESSION['lab18_role'] !== 'admin' && $_SESSION['lab18_login'] !== 'admin')) {
     die("Brak uprawnień administratora.");
 }
 
