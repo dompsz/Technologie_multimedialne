@@ -60,23 +60,7 @@ CREATE TABLE IF NOT EXISTS `oceny` (
   CONSTRAINT `fk_oceny_uzytkownicy` FOREIGN KEY (`idu`) REFERENCES `uzytkownicy` (`idu`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 6. Tabela Cenzura
-CREATE TABLE IF NOT EXISTS `cenzura` (
-  `idc` int(11) NOT NULL AUTO_INCREMENT,
-  `slowo_zakazane` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `zamiennik` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT '***',
-  PRIMARY KEY (`idc`),
-  UNIQUE KEY `slowo_zakazane` (`slowo_zakazane`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- SEEDOWANIE DANYCH
-
--- Cenzura
-INSERT INTO `cenzura` (`slowo_zakazane`, `zamiennik`) VALUES 
-('cholera', 'motyla noga'),
-('gupi', 'niemądry'),
-('brzydkie_slowo', '***')
-ON DUPLICATE KEY UPDATE zamiennik=VALUES(zamiennik);
 
 -- Użytkownicy (hasło: admin)
 INSERT INTO `uzytkownicy` (`idu`, `login`, `haslo`, `rola`) VALUES 

@@ -40,7 +40,15 @@ $user_id = $_SESSION['lab18_user_id'] ?? null;
     <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
         <div class="container">
             <a class="navbar-brand fw-bold text-accent" href="index.php">🖼️ GALERIA LAB 18</a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">Powrót do list galerii</a>
+            <div class="d-flex align-items-center">
+                <a href="index.php" class="btn btn-outline-light btn-sm me-2">Wróć do list galerii</a>
+                <?php if (isset($_SESSION['lab18_role']) && $_SESSION['lab18_role'] === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Admina</a>
+                <?php endif; ?>
+                <?php if ($user_id): ?>
+                    <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
+                <?php endif; ?>
+            </div>
         </div>
     </nav>
 

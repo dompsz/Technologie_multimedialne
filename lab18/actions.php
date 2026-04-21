@@ -68,15 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tresc = trim($_POST['tresc']);
 
             if (!empty($tresc)) {
-                require_once 'functions.php';
-                $filtered_tresc = filterContent($tresc, $conn);
                 $stmt = $conn->prepare("INSERT INTO komentarze (idz, idu, tresc) VALUES (?, ?, ?)");
-                $stmt->execute([$idz, $user_id, $filtered_tresc]);
+                $stmt->execute([$idz, $user_id, $tresc]);
                 header("Location: photo.php?id=$idz&msg=comment_added");
                 exit();
             }
-        }
-        if ($action === 'rate') {
+        }        if ($action === 'rate') {
             $idz = (int)$_POST['idz'];
             $ocena = (int)$_POST['ocena'];
             

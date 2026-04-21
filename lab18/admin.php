@@ -22,17 +22,7 @@ if (isset($_POST['add_gallery'])) {
     }
 }
 
-// 2. Zarządzanie cenzurą
-if (isset($_POST['add_censure'])) {
-    $slowo = trim($_POST['slowo']);
-    $zamiennik = trim($_POST['zamiennik']);
-    if (!empty($slowo)) {
-        $stmt = $conn->prepare("INSERT INTO cenzura (slowo_zakazane, zamiennik) VALUES (?, ?)");
-        $stmt->execute([$slowo, $zamiennik ?: '***']);
-    }
-}
-
-// 3. Usuwanie obiektów
+// 2. Usuwanie obiektów
 if (isset($_GET['delete_gallery'])) {
     $idg = (int)$_GET['delete_gallery'];
     $stmt = $conn->prepare("DELETE FROM galerie WHERE idg = ?");
@@ -49,7 +39,7 @@ if (isset($_GET['delete_comment'])) {
     $stmt->execute([$idk]);
 }
 
-// 4. Zmiana uprawnień
+// 3. Zmiana uprawnień
 if (isset($_POST['change_role'])) {
     $idu = (int)$_POST['user_id'];
     $new_role = $_POST['new_role'];
@@ -59,7 +49,6 @@ if (isset($_POST['change_role'])) {
 
 // --- POBIERANIE DANYCH ---
 $galerie = $conn->query("SELECT * FROM galerie ORDER BY idg DESC")->fetchAll();
-$cenzura = $conn->query("SELECT * FROM cenzura ORDER BY slowo_zakazane ASC")->fetchAll();
 $users = $conn->query("SELECT * FROM uzytkownicy ORDER BY rola DESC")->fetchAll();
 
 // Ostatnie zdjęcia i komentarze do moderacji
@@ -71,7 +60,7 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Moderacji - Galeria Lab 18</title>
+    <title>Panel Administracyjny - Galeria Lab 18</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
@@ -84,7 +73,7 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
 <body class="bg-dark text-light">
     <nav class="navbar navbar-dark bg-black border-bottom border-warning mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand text-warning fw-bold" href="index.php">🛡️ PANEL MODERACJI LAB 18</a>
+            <a class="navbar-brand text-warning fw-bold" href="index.php">🛡️ PANEL ADMINISTRACYJNY LAB 18</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">Powrót do Galerii</a>
         </div>
     </nav>
@@ -93,21 +82,24 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
         <div class="row">
             
             <!-- Galerie -->
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="admin-card">
                     <div class="card-header">📂 Zarządzanie Galeriami</div>
                     <div class="card-body">
                         <form method="POST" class="mb-4">
                             <input type="hidden" name="add_gallery" value="1">
-                            <input type="text" name="nazwa_galerii" class="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Nazwa galerii" required>
-                            <div class="form-check mb-2">
+                            <div class="input-group">
+                                <input type="text" name="nazwa_galerii" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Nowa galeria" required>
+                                <button type="submit" class="btn btn-sm btn-success">Dodaj</button>
+                            </div>
+                            <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" name="czy_komercyjna" id="comCheck">
                                 <label class="form-check-label small" for="comCheck">Komercyjna (Znaki wodne)</label>
                             </div>
-                            <button type="submit" class="btn btn-sm btn-success w-100">Dodaj Galerię</button>
                         </form>
                         <div style="max-height: 250px; overflow-y: auto;">
                             <table class="table table-sm table-dark">
+                                <thead><tr><th>Nazwa</th><th>Akcja</th></tr></thead>
                                 <tbody>
                                     <?php foreach ($galerie as $g): ?>
                                         <tr>
@@ -124,35 +116,8 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
                 </div>
             </div>
 
-            <!-- Cenzura -->
-            <div class="col-lg-4">
-                <div class="admin-card">
-                    <div class="card-header">🚫 Zarządzanie Cenzurą</div>
-                    <div class="card-body">
-                        <form method="POST" class="mb-4">
-                            <input type="hidden" name="add_censure" value="1">
-                            <div class="row g-2">
-                                <div class="col-6"><input type="text" name="slowo" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Słowo" required></div>
-                                <div class="col-6"><input type="text" name="zamiennik" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Zamiennik"></div>
-                                <div class="col-12"><button type="submit" class="btn btn-sm btn-primary w-100">Dodaj do filtra</button></div>
-                            </div>
-                        </form>
-                        <div style="max-height: 250px; overflow-y: auto;">
-                            <table class="table table-sm table-dark">
-                                <thead><tr><th>Słowo</th><th>Zamiennik</th></tr></thead>
-                                <tbody>
-                                    <?php foreach ($cenzura as $c): ?>
-                                        <tr><td><?php echo htmlspecialchars($c['slowo_zakazane']); ?></td><td><?php echo htmlspecialchars($c['zamiennik']); ?></td></tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Użytkownicy -->
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="admin-card">
                     <div class="card-header">👥 Użytkownicy</div>
                     <div class="card-body p-0">
@@ -171,7 +136,7 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
                                                         <option value="user" <?php echo $u['rola']=='user'?'selected':''; ?>>User</option>
                                                         <option value="admin" <?php echo $u['rola']=='admin'?'selected':''; ?>>Admin</option>
                                                     </select>
-                                                    <button type="submit" name="change_role" class="btn btn-xxs btn-outline-warning">OK</button>
+                                                    <button type="submit" name="change_role" class="btn btn-xxs btn-outline-warning">Zmień</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -186,7 +151,7 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
             <!-- Posty (Zdjęcia i Komentarze) -->
             <div class="col-12">
                 <div class="admin-card">
-                    <div class="card-header">📜 Ostatnia aktywność (Moderacja)</div>
+                    <div class="card-header">📜 Moderacja aktywności</div>
                     <div class="card-body p-0">
                         <div class="row g-0">
                             <div class="col-md-6 border-end border-secondary">
@@ -198,7 +163,7 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
                                                 <td><img src="uploads/<?php echo $z['plik']; ?>" style="width:30px; height:30px; object-fit:cover;"></td>
                                                 <td><?php echo htmlspecialchars($z['tytul']); ?></td>
                                                 <td><small class="text-secondary"><?php echo htmlspecialchars($z['login']); ?></small></td>
-                                                <td class="text-end"><a href="admin.php?delete_photo=<?php echo $z['idz']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
+                                                <td class="text-end pe-2"><a href="admin.php?delete_photo=<?php echo $z['idz']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -210,9 +175,9 @@ $recent_comments = $conn->query("SELECT k.*, u.login, z.tytul FROM komentarze k 
                                     <tbody>
                                         <?php foreach ($recent_comments as $k): ?>
                                             <tr class="align-middle">
-                                                <td class="fw-bold"><?php echo htmlspecialchars($k['login']); ?></td>
+                                                <td class="ps-2 fw-bold"><?php echo htmlspecialchars($k['login']); ?></td>
                                                 <td class="text-truncate" style="max-width: 150px;"><?php echo htmlspecialchars($k['tresc']); ?></td>
-                                                <td class="text-end"><a href="admin.php?delete_comment=<?php echo $k['idk']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
+                                                <td class="text-end pe-2"><a href="admin.php?delete_comment=<?php echo $k['idk']; ?>" class="btn btn-xxs btn-danger">Usuń</a></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>

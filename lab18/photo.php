@@ -68,7 +68,15 @@ if ($user_id) {
     <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
         <div class="container">
             <a class="navbar-brand fw-bold text-accent" href="index.php">🖼️ GALERIA LAB 18</a>
-            <a href="gallery.php?id=<?php echo $photo['idg']; ?>" class="btn btn-outline-light btn-sm">Powrót do galerii</a>
+            <div class="d-flex align-items-center">
+                <a href="gallery.php?id=<?php echo $photo['idg']; ?>" class="btn btn-outline-light btn-sm me-2">Powrót do galerii</a>
+                <?php if (isset($_SESSION['lab18_role']) && $_SESSION['lab18_role'] === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline-warning btn-sm me-2">🛡️ Panel Admina</a>
+                <?php endif; ?>
+                <?php if ($user_id): ?>
+                    <a href="logout.php" class="btn btn-outline-danger btn-sm">Wyloguj</a>
+                <?php endif; ?>
+            </div>
         </div>
     </nav>
 
