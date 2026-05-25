@@ -50,6 +50,16 @@ $user_login = $_SESSION['lab20_login'] ?? '';
         </div>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <!-- Kafel Mapa Zbiorcza -->
+            <div class="col">
+                <div class="category-card p-4 text-center border-primary shadow-sm" style="background: rgba(13, 110, 253, 0.05);">
+                    <div class="h1 mb-3">🌍</div>
+                    <h3 class="h4 mb-3"><a href="map.php" class="text-primary text-decoration-none">Mapa Zbiorcza</a></h3>
+                    <p class="text-secondary mb-3">Zobacz wszystkie ogłoszenia na interaktywnej mapie GIS</p>
+                    <a href="map.php" class="btn btn-sm btn-primary px-4">Otwórz Mapę</a>
+                </div>
+            </div>
+            
             <?php foreach ($kategorie as $k): ?>
                 <div class="col">
                     <div class="category-card p-4 text-center">
