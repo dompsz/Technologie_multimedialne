@@ -79,6 +79,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$tytul, $tresc, $cena, $lokalizacja_tekst, $ido]);
                 
                 logAction($conn, $ido, $user_id, 'edycja_ogloszenia');
+
+                // 1. Usuwanie zaznaczonych zdjęć
+                if (isset($_POST['delete_photos'])) {
+                    foreach ($_POST['delete_photos'] as $filename) {
+                        $stmt_del = $conn->prepare("DELETE FROM ogloszenia_zdjecia WHERE ido = ? AND plik = ?");
+                        $stmt_del->execute([$ido, $filename]);
+                        
+                        $filepath = __DIR__ . '/uploads/' . $filename;
+                        if (file_exists($filepath)) {
+                            unlink($filepath);
+                        }
+                    }
+                }
+
+                // 2. Dodawanie nowych zdjęć
+                if (isset($_FILES['zdjecia'])) {
+                    $upload_dir = __DIR__ . '/uploads/';
+                    $files = $_FILES['zdjecia'];
+                    if (isset($files['name'][0]) && !empty($files['name'][0])) {
+                        $count = count($files['name']);
+                        for ($i = 0; $i < $count; $i++) {
+                            if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                                $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+                                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                                    $filename = uniqid('img_') . '_' . time() . '_' . $i . '.' . $ext;
+                                    if (move_uploaded_file($files['tmp_name'][$i], $upload_dir . $filename)) {
+                                        $stmt_img = $conn->prepare("INSERT INTO ogloszenia_zdjecia (ido, plik) VALUES (?, ?)");
+                                        $stmt_img->execute([$ido, $filename]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 
                 header("Location: ad.php?id=$ido&msg=updated");
                 exit();

@@ -96,8 +96,8 @@ if ($user_id) {
 
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
-                        <a href="https://www.google.com/maps?q=<?php echo $ad['lat']; ?>,<?php echo $ad['lng']; ?>" target="_blank" class="text-decoration-none text-primary">
-                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w Google Maps)</small>
+                        <a href="https://mapy.geoportal.gov.pl/imap/Imgp_2.html?locale=pl&gui=new&sessionID=1&bbox=<?php echo ($ad['lng']-0.01).','.($ad['lat']-0.01).','.($ad['lng']+0.01).','.($ad['lat']+0.01); ?>&variant=KATASTER" target="_blank" class="text-decoration-none text-primary">
+                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w Geoportalu)</small>
                         </a>
                     </h4>
                     <div id="map"></div>
@@ -136,7 +136,7 @@ if ($user_id) {
     <div class="modal fade" id="editAdModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-light border-secondary">
-                <form action="actions.php" method="POST">
+                <form action="actions.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="edit_ad">
                     <input type="hidden" name="ido" value="<?php echo $ido; ?>">
                     <div class="modal-header border-secondary">
@@ -144,25 +144,51 @@ if ($user_id) {
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Tytuł</label>
-                            <input type="text" name="tytul" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['tytul']); ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Cena (PLN)</label>
-                            <input type="number" step="0.01" name="cena" class="form-control bg-black text-white border-secondary" value="<?php echo $ad['cena']; ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Opis</label>
-                            <textarea name="tresc" class="form-control bg-black text-white border-secondary" rows="5" required><?php echo htmlspecialchars($ad['tresc']); ?></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Lokalizacja (tekstowo)</label>
-                            <input type="text" name="lokalizacja_tekst" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tytuł</label>
+                                    <input type="text" name="tytul" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['tytul']); ?>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Cena (PLN)</label>
+                                    <input type="number" step="0.01" name="cena" class="form-control bg-black text-white border-secondary" value="<?php echo $ad['cena']; ?>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Opis</label>
+                                    <textarea name="tresc" class="form-control bg-black text-white border-secondary" rows="5" required><?php echo htmlspecialchars($ad['tresc']); ?></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-info">Dodaj nowe zdjęcia</label>
+                                    <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Lokalizacja (tekstowo)</label>
+                                    <input type="text" name="lokalizacja_tekst" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
+                                </div>
+                                
+                                <label class="form-label text-warning">Zarządzaj istniejącymi zdjęciami</label>
+                                <div class="row g-2 overflow-auto" style="max-height: 250px;">
+                                    <?php foreach ($photos as $img): ?>
+                                        <div class="col-4 position-relative mb-2">
+                                            <img src="uploads/<?php echo $img['plik']; ?>" class="img-fluid rounded border border-secondary" style="height: 60px; width: 100%; object-fit: cover;">
+                                            <div class="form-check position-absolute top-0 end-0 bg-danger rounded-circle px-1" style="opacity: 0.9;">
+                                                <input class="form-check-input m-0" type="checkbox" name="delete_photos[]" value="<?php echo $img['plik']; ?>" style="width: 15px; height: 15px;">
+                                            </div>
+                                            <small class="d-block text-center text-danger" style="font-size: 0.6rem;">Usuń</small>
+                                        </div>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($photos)): ?>
+                                        <p class="small text-muted ps-2">Brak zdjęć do wyświetlenia.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-secondary" data-bs-modal="modal">Anuluj</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
                         <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
                     </div>
                 </form>
