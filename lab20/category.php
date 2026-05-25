@@ -15,7 +15,7 @@ if (!$kategoria) {
 }
 
 // Pobierz ogłoszenia w tej kategorii
-$stmt_o = $conn->prepare("SELECT o.*, u.login as autor FROM ogloszenia o JOIN uzytkownicy u ON o.idu = u.idu WHERE o.idko = ? ORDER BY o.datagodzina DESC");
+$stmt_o = $conn->prepare("SELECT o.*, u.login as autor FROM ogloszenia o LEFT JOIN uzytkownicy u ON o.idu = u.idu WHERE o.idko = ? ORDER BY o.datagodzina DESC");
 $stmt_o->execute([$idko]);
 $ogloszenia = $stmt_o->fetchAll();
 
@@ -29,8 +29,8 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
-        .ad-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
-        .ad-card:hover { transform: scale(1.02); border-color: var(--accent-color); }
+        .ad-card { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; overflow: hidden; transition: transform 0.2s; color: white; }
+        .ad-card:hover { transform: scale(1.01); border-color: #0d6efd; }
         .price-tag { color: #28a745; font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
@@ -62,16 +62,24 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
             <?php foreach ($ogloszenia as $o): ?>
                 <div class="col">
                     <a href="ad.php?id=<?php echo $o['ido']; ?>" class="text-decoration-none">
-                        <div class="ad-card p-3">
+                        <div class="ad-card p-4">
                             <div class="row align-items-center">
                                 <div class="col-md-8">
-                                    <h4 class="text-light mb-1"><?php echo htmlspecialchars($o['tytul']); ?></h4>
-                                    <p class="text-secondary small mb-2"><?php echo htmlspecialchars($o['lokalizacja_tekst']); ?> • <?php echo date('d.m.Y', strtotime($o['datagodzina'])); ?></p>
-                                    <p class="text-light text-truncate" style="max-width: 500px;"><?php echo htmlspecialchars(substr($o['tresc'], 0, 150)); ?>...</p>
+                                    <h4 class="mb-1 text-white"><?php echo htmlspecialchars($o['tytul'] ?? 'Bez tytułu'); ?></h4>
+                                    <p class="text-info small mb-2">
+                                        📍 <?php echo htmlspecialchars($o['lokalizacja_tekst'] ?? 'Brak lokalizacji'); ?> 
+                                        • 🕒 <?php echo isset($o['datagodzina']) ? date('d.m.Y', strtotime($o['datagodzina'])) : 'Brak daty'; ?>
+                                    </p>
+                                    <div class="text-light">
+                                        <?php 
+                                            $opis = $o['tresc'] ?? '';
+                                            echo htmlspecialchars(mb_strlen($opis) > 150 ? mb_substr($opis, 0, 150) . '...' : $opis); 
+                                        ?>
+                                    </div>
                                 </div>
                                 <div class="col-md-4 text-md-end">
-                                    <div class="price-tag mb-2"><?php echo number_format($o['cena'], 2, ',', ' '); ?> PLN</div>
-                                    <div class="text-info small">Autor: <?php echo htmlspecialchars($o['autor']); ?></div>
+                                    <div class="price-tag mb-2"><?php echo number_format($o['cena'] ?? 0, 2, ',', ' '); ?> PLN</div>
+                                    <div class="text-secondary small">Autor: <?php echo htmlspecialchars($o['autor'] ?? 'Anonim'); ?></div>
                                 </div>
                             </div>
                         </div>
