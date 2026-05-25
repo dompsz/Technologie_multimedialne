@@ -112,6 +112,11 @@
                 <h2>Zadanie 18</h2>
                 <p>Internetowa Galeria Zdjęć</p>
             </a>
+            <a href="lab20/index.php" class="tile">
+                <div class="lab-icon">📍</div>
+                <h2>Zadanie 20</h2>
+                <p>Portal Ogłoszeniowy GIS</p>
+            </a>
         </div>
     </div>
 </body>
