@@ -20,6 +20,11 @@ if (!$ad) {
     die("Ogłoszenie nie istnieje.");
 }
 
+// Pobierz zdjęcia ogłoszenia
+$stmt_i = $conn->prepare("SELECT plik FROM ogloszenia_zdjecia WHERE ido = ?");
+$stmt_i->execute([$ido]);
+$photos = $stmt_i->fetchAll();
+
 $user_id = $_SESSION['lab20_user_id'] ?? null;
 $user_role = $_SESSION['lab20_role'] ?? 'guest';
 $is_owner = ($user_id && ($ad['idu'] == $user_id || $user_role === 'admin' || $user_role === 'moderator'));
@@ -69,13 +74,32 @@ if ($user_id) {
 
                 <div class="price-big mb-4"><?php echo number_format($ad['cena'], 2, ',', ' '); ?> PLN</div>
 
+                <?php if (!empty($photos)): ?>
+                    <div class="mb-5">
+                        <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">Galeria zdjęć</h4>
+                        <div class="row g-3">
+                            <?php foreach ($photos as $img): ?>
+                                <div class="col-md-4">
+                                    <div class="ratio ratio-4x3">
+                                        <img src="uploads/<?php echo $img['plik']; ?>" class="img-fluid rounded border border-secondary" style="object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">Opis ogłoszenia</h4>
                     <p class="lead" style="white-space: pre-line;"><?php echo htmlspecialchars($ad['tresc']); ?></p>
                 </div>
 
                 <div class="mb-5">
-                    <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">Lokalizacja na mapie (GIS)</h4>
+                    <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
+                        <a href="https://www.google.com/maps?q=<?php echo $ad['lat']; ?>,<?php echo $ad['lng']; ?>" target="_blank" class="text-decoration-none text-primary">
+                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w Google Maps)</small>
+                        </a>
+                    </h4>
                     <div id="map"></div>
                 </div>
             </div>

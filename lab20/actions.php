@@ -30,6 +30,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ido = $conn->lastInsertId();
                 
                 logAction($conn, $ido, $user_id, 'dodanie_ogloszenia');
+
+                // Obsługa zdjęć
+                if (isset($_FILES['zdjecia'])) {
+                    $upload_dir = __DIR__ . '/uploads/';
+                    if (!is_dir($upload_dir)) {
+                        mkdir($upload_dir, 0777, true);
+                    }
+
+                    $files = $_FILES['zdjecia'];
+                    $count = count($files['name']);
+
+                    for ($i = 0; $i < $count; $i++) {
+                        if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                            $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+                            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                            
+                            if (in_array($ext, $allowed)) {
+                                $filename = uniqid('img_') . '_' . $i . '.' . $ext;
+                                if (move_uploaded_file($files['tmp_name'][$i], $upload_dir . $filename)) {
+                                    $stmt_img = $conn->prepare("INSERT INTO ogloszenia_zdjecia (ido, plik) VALUES (?, ?)");
+                                    $stmt_img->execute([$ido, $filename]);
+                                }
+                            }
+                        }
+                    }
+                }
                 
                 header("Location: category.php?id=$idko&msg=ad_added");
                 exit();

@@ -64,7 +64,7 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
     <div class="modal fade" id="addAdModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-light">
-                <form action="actions.php" method="POST">
+                <form action="actions.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="add_ad">
                     <input type="hidden" name="idko" value="<?php echo $idko; ?>">
                     <div class="modal-header">
@@ -85,6 +85,10 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                 <div class="mb-3">
                                     <label>Opis</label>
                                     <textarea name="tresc" class="form-control" rows="5" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Zdjęcia (możesz wybrać kilka)</label>
+                                    <input type="file" name="zdjecia[]" class="form-control bg-dark text-white border-secondary" accept="image/*" multiple>
                                 </div>
                             </div>
                             <div class="col-md-6">

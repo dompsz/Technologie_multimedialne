@@ -55,6 +55,16 @@ CREATE TABLE `logi_ogloszen` (
   CONSTRAINT `fk_logi_uzytkownicy` FOREIGN KEY (`idu`) REFERENCES `uzytkownicy` (`idu`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 5. Tabela Zdjęcia Ogłoszeń
+DROP TABLE IF EXISTS `ogloszenia_zdjecia`;
+CREATE TABLE `ogloszenia_zdjecia` (
+  `idz` int(11) NOT NULL AUTO_INCREMENT,
+  `ido` int(11) NOT NULL,
+  `plik` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`idz`),
+  CONSTRAINT `fk_zdjecia_ogloszenia` FOREIGN KEY (`ido`) REFERENCES `ogloszenia` (`ido`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- SEEDOWANIE DANYCH
