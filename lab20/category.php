@@ -7,8 +7,8 @@ $idko = (int)($_GET['id'] ?? 0);
 
 // Pobierz informacje o kategorii
 $stmt_k = $conn->prepare("SELECT * FROM kategorie_ogloszen WHERE idko = ?");
-$stmt_k.execute([$idko]);
-$kategoria = $stmt_k.fetch();
+$stmt_k->execute([$idko]);
+$kategoria = $stmt_k->fetch();
 
 if (!$kategoria) {
     die("Kategoria nie istnieje.");
