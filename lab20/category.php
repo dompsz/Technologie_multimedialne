@@ -20,6 +20,15 @@ $stmt_o->execute([$idko]);
 $ogloszenia = $stmt_o->fetchAll();
 
 $user_id = $_SESSION['lab20_user_id'] ?? null;
+
+// DEBUG - Usuń po sprawdzeniu
+if (isset($_GET['debug'])) {
+    echo "<pre style='color: white; background: black; padding: 20px;'>";
+    echo "ID Kategorii: " . $idko . "\n";
+    echo "Liczba znalezionych: " . count($ogloszenia) . "\n";
+    print_r($ogloszenia);
+    echo "</pre>";
+}
 ?>
 <!DOCTYPE html>
 <html lang="pl">
