@@ -117,7 +117,7 @@ if ($user_id) {
 
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
-                        <a href="https://mapy.geoportal.gov.pl/imap/Imgp_2.html?locale=pl&gui=new&sessionID=1&bbox=<?php echo ($ad['lng']-0.01).','.($ad['lat']-0.01).','.($ad['lng']+0.01).','.($ad['lat']+0.01); ?>&variant=KATASTER" target="_blank" class="text-decoration-none text-primary">
+                        <a href="https://mapy.geoportal.gov.pl/imap/Imgp_2.html?locale=pl&gui=new&gpz=<?php echo $ad['lat']; ?>;<?php echo $ad['lng']; ?>;17" target="_blank" class="text-decoration-none text-primary">
                             🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w Geoportalu)</small>
                         </a>
                     </h4>
