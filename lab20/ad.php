@@ -75,9 +75,15 @@ if ($user_id) {
 
                 <div class="price-big mb-4"><?php echo number_format($ad['cena'], 2, ',', ' '); ?> PLN</div>
 
-                <?php if (!empty($photos)): ?>
-                    <div class="mb-5">
-                        <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">Galeria zdjęć</h4>
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+                        <h4 class="text-primary mb-0">Galeria zdjęć</h4>
+                        <?php if ($is_owner): ?>
+                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPhotosModal">+ Dodaj zdjęcia</button>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <?php if (!empty($photos)): ?>
                         <div class="row g-3">
                             <?php foreach ($photos as $img): ?>
                                 <div class="col-md-4">
@@ -97,8 +103,12 @@ if ($user_id) {
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    </div>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <div class="p-4 bg-dark border border-secondary rounded text-center text-secondary">
+                            <p class="mb-0">To ogłoszenie nie posiada jeszcze żadnych zdjęć.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">Opis ogłoszenia</h4>
@@ -257,6 +267,48 @@ if ($user_id) {
 
     function addPhotoField() {
         const container = document.getElementById('photo-inputs');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+    </div>
+    <?php endif; ?>
+
+    <!-- Modal szybkiego dodawania zdjęć -->
+    <?php if ($is_owner): ?>
+    <div class="modal fade" id="addPhotosModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <form action="actions.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add_photos">
+                    <input type="hidden" name="ido" value="<?php echo $ido; ?>">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Dodaj zdjęcia do ogłoszenia</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="quick-photo-inputs">
+                            <div class="input-group mb-2">
+                                <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple required>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addQuickPhotoField()">+ Dodaj więcej pól</button>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-success">Wgraj zdjęcia</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+    function addQuickPhotoField() {
+        const container = document.getElementById('quick-photo-inputs');
         const div = document.createElement('div');
         div.className = 'input-group mb-2';
         div.innerHTML = `
