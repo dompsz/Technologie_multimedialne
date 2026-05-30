@@ -4,7 +4,12 @@ require_once 'db_config.php';
 require_once 'functions.php';
 
 // Pobierz wszystkie ogłoszenia z danymi do mapy
-$stmt = $conn->query("SELECT o.*, k.nazwa_kategorii FROM ogloszenia o JOIN kategorie_ogloszen k ON o.idko = k.idko");
+$stmt = $conn->query("
+    SELECT o.*, k.nazwa_kategorii,
+    (SELECT plik FROM ogloszenia_zdjecia z WHERE z.ido = o.ido LIMIT 1) as miniaturka 
+    FROM ogloszenia o 
+    JOIN kategorie_ogloszen k ON o.idko = k.idko
+");
 $ads = $stmt->fetchAll();
 
 $user_id = $_SESSION['lab20_user_id'] ?? null;
@@ -20,6 +25,7 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
     <style>
         #main-map { height: 600px; border-radius: 12px; border: 1px solid var(--border-color); }
         .text-primary { color: #0d6efd !important; }
+        .map-thumb { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; border: 1px solid #444; }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -51,11 +57,17 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
         ads.forEach(function(ad) {
             if (ad.lat && ad.lng) {
                 var marker = L.marker([ad.lat, ad.lng]).addTo(map);
+                
+                var imgHtml = ad.miniaturka ? "<img src='uploads/" + ad.miniaturka + "' class='map-thumb'>" : "";
+                
                 marker.bindPopup(
-                    "<b>" + ad.tytul + "</b><br>" +
-                    "Kategoria: " + ad.nazwa_kategorii + "<br>" +
-                    "Cena: " + ad.cena + " PLN<br>" +
-                    "<a href='ad.php?id=" + ad.ido + "' class='btn btn-sm btn-primary mt-2 text-white'>Zobacz ogłoszenie</a>"
+                    "<div style='min-width: 150px;'>" +
+                    imgHtml +
+                    "<b style='color:#0d6efd;'>" + ad.tytul + "</b><br>" +
+                    "<small class='text-muted'>Kategoria: " + ad.nazwa_kategorii + "</small><br>" +
+                    "<b class='text-success'>" + ad.cena + " PLN</b><br>" +
+                    "<a href='ad.php?id=" + ad.ido + "' class='btn btn-xs btn-primary mt-2 text-white w-100' style='padding: 2px 5px; font-size: 0.75rem;'>Zobacz szczegóły</a>" +
+                    "</div>"
                 );
             }
         });

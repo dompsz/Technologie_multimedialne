@@ -15,7 +15,14 @@ if (!$kategoria) {
 }
 
 // Pobierz ogłoszenia
-$stmt_o = $conn->prepare("SELECT o.*, u.login as autor FROM ogloszenia o LEFT JOIN uzytkownicy u ON o.idu = u.idu WHERE o.idko = ? ORDER BY o.datagodzina DESC");
+$stmt_o = $conn->prepare("
+    SELECT o.*, u.login as autor,
+    (SELECT plik FROM ogloszenia_zdjecia z WHERE z.ido = o.ido LIMIT 1) as miniaturka 
+    FROM ogloszenia o 
+    LEFT JOIN uzytkownicy u ON o.idu = u.idu 
+    WHERE o.idko = ? 
+    ORDER BY o.datagodzina DESC
+");
 $stmt_o->execute([$idko]);
 $ogloszenia = $stmt_o->fetchAll();
 
@@ -30,6 +37,7 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
     <style>
         body { background: #111 !important; color: white !important; }
         .test-card { background: #222; border: 1px solid #555; padding: 20px; margin-bottom: 10px; border-radius: 5px; }
+        .mini-photo { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #444; }
     </style>
 </head>
 <body class="p-4">
@@ -48,12 +56,19 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
             <?php else: ?>
                 <p>Znaleziono: <?php echo count($ogloszenia); ?></p>
                 <?php foreach ($ogloszenia as $o): ?>
-                    <div class="test-card">
-                        <h2 style="color: #0d6efd;"><?php echo htmlspecialchars($o['tytul']); ?></h2>
-                        <p><strong>Cena:</strong> <?php echo $o['cena']; ?> PLN</p>
-                        <p><strong>Lokalizacja:</strong> <?php echo htmlspecialchars($o['lokalizacja_tekst']); ?></p>
-                        <p><?php echo nl2br(htmlspecialchars($o['tresc'])); ?></p>
-                        <a href="ad.php?id=<?php echo $o['ido']; ?>" class="btn btn-sm btn-info">Zobacz szczegóły</a>
+                    <div class="test-card d-flex gap-3 align-items-center">
+                        <?php if($o['miniaturka']): ?>
+                            <img src="uploads/<?php echo $o['miniaturka']; ?>" class="mini-photo">
+                        <?php else: ?>
+                            <div class="mini-photo bg-dark d-flex align-items-center justify-content-center text-secondary small">Brak zdjęć</div>
+                        <?php endif; ?>
+                        
+                        <div>
+                            <h2 style="color: #0d6efd;" class="h4 mb-1"><?php echo htmlspecialchars($o['tytul']); ?></h2>
+                            <p class="mb-1 text-success fw-bold"><?php echo number_format($o['cena'], 2, ',', ' '); ?> PLN</p>
+                            <p class="small text-secondary mb-2">📍 <?php echo htmlspecialchars($o['lokalizacja_tekst']); ?></p>
+                            <a href="ad.php?id=<?php echo $o['ido']; ?>" class="btn btn-sm btn-info">Zobacz szczegóły</a>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -86,17 +101,13 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                     <label>Opis</label>
                                     <textarea name="tresc" class="form-control" rows="5" required></textarea>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Zdjęcia (możesz wybrać kilka)</label>
-                                    <input type="file" name="zdjecia[]" class="form-control bg-dark text-white border-secondary" accept="image/*" multiple>
-                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label>Lokalizacja (tekst)</label>
                                     <input type="text" name="lokalizacja_tekst" class="form-control" required>
                                 </div>
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-6">
                                         <label>Lat</label>
                                         <input type="number" step="0.0001" name="lat" class="form-control" required>
@@ -106,17 +117,39 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                         <input type="number" step="0.0001" name="lng" class="form-control" required>
                                     </div>
                                 </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label text-info">Zdjęcia (możesz wybrać wiele plików)</label>
+                                    <div id="photo-inputs">
+                                        <div class="input-group mb-2">
+                                            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addPhotoField()">+ Dodaj więcej pól na zdjęcia</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Dodaj</button>
+                        <button type="submit" class="btn btn-primary px-4">Opublikuj Ogłoszenie</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <script>
+    function addPhotoField() {
+        const container = document.getElementById('photo-inputs');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -97,17 +97,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (isset($_FILES['zdjecia'])) {
                     $upload_dir = __DIR__ . '/uploads/';
                     $files = $_FILES['zdjecia'];
-                    if (isset($files['name'][0]) && !empty($files['name'][0])) {
-                        $count = count($files['name']);
-                        for ($i = 0; $i < $count; $i++) {
-                            if ($files['error'][$i] === UPLOAD_ERR_OK) {
-                                $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
-                                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                                    $filename = uniqid('img_') . '_' . time() . '_' . $i . '.' . $ext;
-                                    if (move_uploaded_file($files['tmp_name'][$i], $upload_dir . $filename)) {
-                                        $stmt_img = $conn->prepare("INSERT INTO ogloszenia_zdjecia (ido, plik) VALUES (?, ?)");
-                                        $stmt_img->execute([$ido, $filename]);
-                                    }
+                    $count = count($files['name']);
+                    for ($i = 0; $i < $count; $i++) {
+                        if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                            $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+                            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                                $filename = uniqid('img_') . '_' . time() . '_' . $i . '.' . $ext;
+                                if (move_uploaded_file($files['tmp_name'][$i], $upload_dir . $filename)) {
+                                    $stmt_img = $conn->prepare("INSERT INTO ogloszenia_zdjecia (ido, plik) VALUES (?, ?)");
+                                    $stmt_img->execute([$ido, $filename]);
                                 }
                             }
                         }

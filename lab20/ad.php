@@ -160,7 +160,12 @@ if ($user_id) {
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label text-info">Dodaj nowe zdjęcia</label>
-                                    <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+                                    <div id="photo-inputs">
+                                        <div class="input-group mb-2">
+                                            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-info w-100 mb-3" onclick="addPhotoField()">+ Dodaj więcej pól na zdjęcia</button>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -195,6 +200,18 @@ if ($user_id) {
             </div>
         </div>
     </div>
+    <script>
+    function addPhotoField() {
+        const container = document.getElementById('photo-inputs');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+    </script>
     <?php endif; ?>
 
     <!-- Leaflet JS -->
