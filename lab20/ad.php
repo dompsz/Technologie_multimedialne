@@ -81,8 +81,18 @@ if ($user_id) {
                         <div class="row g-3">
                             <?php foreach ($photos as $img): ?>
                                 <div class="col-md-4">
-                                    <div class="ratio ratio-4x3">
+                                    <div class="ratio ratio-4x3 position-relative group">
                                         <img src="uploads/<?php echo $img['plik']; ?>" class="img-fluid rounded border border-secondary" style="object-fit: cover; cursor: pointer;" onclick="window.open(this.src)">
+                                        <?php if ($is_owner): ?>
+                                            <form action="actions.php" method="POST" class="position-absolute top-0 end-0 m-2" onsubmit="return confirm('Usunąć to zdjęcie?')">
+                                                <input type="hidden" name="action" value="delete_photo">
+                                                <input type="hidden" name="ido" value="<?php echo $ido; ?>">
+                                                <input type="hidden" name="filename" value="<?php echo $img['plik']; ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm p-1 leading-none shadow" title="Usuń zdjęcie" style="opacity: 0.8;">
+                                                    <small>✕</small>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

@@ -141,6 +141,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        if ($action === 'delete_photo') {
+            $ido = (int)$_POST['ido'];
+            $filename = $_POST['filename'];
+
+            $stmt_check = $conn->prepare("SELECT idu FROM ogloszenia WHERE ido = ?");
+            $stmt_check->execute([$ido]);
+            $ad_info = $stmt_check->fetch();
+
+            if ($ad_info && ($ad_info['idu'] == $user_id || $user_role === 'admin' || $user_role === 'moderator')) {
+                $stmt_del = $conn->prepare("DELETE FROM ogloszenia_zdjecia WHERE ido = ? AND plik = ?");
+                $stmt_del->execute([$ido, $filename]);
+                
+                $filepath = __DIR__ . '/uploads/' . $filename;
+                if (file_exists($filepath)) {
+                    unlink($filepath);
+                }
+                
+                header("Location: ad.php?id=$ido&msg=photo_deleted");
+                exit();
+            } else {
+                die("Brak uprawnień.");
+            }
+        }
+
     } catch (PDOException $e) {
         die("Błąd bazy danych: " . $e->getMessage());
     }
