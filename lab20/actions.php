@@ -68,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tresc = trim($_POST['tresc']);
             $cena = (float)$_POST['cena'];
             $lokalizacja_tekst = trim($_POST['lokalizacja_tekst']);
+            $lat = (float)$_POST['lat'];
+            $lng = (float)$_POST['lng'];
 
             // Sprawdzenie uprawnień (właściciel lub admin/moderator)
             $stmt_check = $conn->prepare("SELECT idu, idko FROM ogloszenia WHERE ido = ?");
@@ -75,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ad_info = $stmt_check->fetch();
 
             if ($ad_info && ($ad_info['idu'] == $user_id || $user_role === 'admin' || $user_role === 'moderator')) {
-                $stmt = $conn->prepare("UPDATE ogloszenia SET tytul = ?, tresc = ?, cena = ?, lokalizacja_tekst = ? WHERE ido = ?");
-                $stmt->execute([$tytul, $tresc, $cena, $lokalizacja_tekst, $ido]);
+                $stmt = $conn->prepare("UPDATE ogloszenia SET tytul = ?, tresc = ?, cena = ?, lokalizacja_tekst = ?, lat = ?, lng = ? WHERE ido = ?");
+                $stmt->execute([$tytul, $tresc, $cena, $lokalizacja_tekst, $lat, $lng, $ido]);
                 
                 logAction($conn, $ido, $user_id, 'edycja_ogloszenia');
 

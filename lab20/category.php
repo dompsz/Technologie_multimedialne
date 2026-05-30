@@ -34,10 +34,12 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
     <meta charset="UTF-8">
     <title>Portal GIS Lab 20</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { background: #111 !important; color: white !important; }
         .test-card { background: #222; border: 1px solid #555; padding: 20px; margin-bottom: 10px; border-radius: 5px; }
         .mini-photo { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #444; }
+        #add-map { height: 250px; border-radius: 8px; border: 1px solid #444; margin-top: 10px; }
     </style>
 </head>
 <body class="p-4">
@@ -101,22 +103,6 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                     <label>Opis</label>
                                     <textarea name="tresc" class="form-control" rows="5" required></textarea>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label>Lokalizacja (tekst)</label>
-                                    <input type="text" name="lokalizacja_tekst" class="form-control" required>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label>Lat</label>
-                                        <input type="number" step="0.0001" name="lat" class="form-control" required>
-                                    </div>
-                                    <div class="col-6">
-                                        <label>Lng</label>
-                                        <input type="number" step="0.0001" name="lng" class="form-control" required>
-                                    </div>
-                                </div>
                                 
                                 <div class="mb-3">
                                     <label class="form-label text-info">Zdjęcia (możesz wybrać wiele plików)</label>
@@ -128,6 +114,24 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                     <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addPhotoField()">+ Dodaj więcej pól na zdjęcia</button>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label>Lokalizacja (tekst)</label>
+                                    <input type="text" name="lokalizacja_tekst" class="form-control" required placeholder="np. Warszawa, Centrum">
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-6">
+                                        <label>Szerokość (Lat)</label>
+                                        <input type="number" step="0.000001" name="lat" id="add-lat" class="form-control" required value="52.2297">
+                                    </div>
+                                    <div class="col-6">
+                                        <label>Długość (Lng)</label>
+                                        <input type="number" step="0.000001" name="lng" id="add-lng" class="form-control" required value="21.0122">
+                                    </div>
+                                </div>
+                                <div class="small text-info mb-2">Kliknij na mapie, aby ustawić lokalizację:</div>
+                                <div id="add-map"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -138,7 +142,38 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+    var addMap, addMarker;
+
+    document.getElementById('addAdModal').addEventListener('shown.bs.modal', function () {
+        if (!addMap) {
+            addMap = L.map('add-map').setView([52.2297, 21.0122], 10);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(addMap);
+
+            addMarker = L.marker([52.2297, 21.0122], {draggable: true}).addTo(addMap);
+
+            addMap.on('click', function(e) {
+                var lat = e.latlng.lat.toFixed(6);
+                var lng = e.latlng.lng.toFixed(6);
+                addMarker.setLatLng(e.latlng);
+                document.getElementById('add-lat').value = lat;
+                document.getElementById('add-lng').value = lng;
+            });
+
+            addMarker.on('dragend', function(e) {
+                var lat = addMarker.getLatLng().lat.toFixed(6);
+                var lng = addMarker.getLatLng().lng.toFixed(6);
+                document.getElementById('add-lat').value = lat;
+                document.getElementById('add-lng').value = lng;
+            });
+        } else {
+            addMap.invalidateSize();
+        }
+    });
+
     function addPhotoField() {
         const container = document.getElementById('photo-inputs');
         const div = document.createElement('div');

@@ -47,6 +47,7 @@ if ($user_id) {
         #map { height: 400px; border-radius: 12px; border: 1px solid var(--border-color); }
         .price-big { font-size: 2.5rem; color: #28a745; font-weight: bold; }
         .ad-meta { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); }
+        #edit-map { height: 250px; border-radius: 8px; border: 1px solid #444; margin-top: 10px; }
     </style>
 </head>
 <body class="bg-dark text-light">
@@ -174,8 +175,20 @@ if ($user_id) {
                                     <input type="text" name="lokalizacja_tekst" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
                                 </div>
                                 
-                                <label class="form-label text-warning">Zarządzaj istniejącymi zdjęciami</label>
-                                <div class="row g-2 overflow-auto" style="max-height: 250px;">
+                                <div class="row mb-1">
+                                    <div class="col-6">
+                                        <label class="form-label">Lat</label>
+                                        <input type="number" step="0.000001" name="lat" id="edit-lat" class="form-control bg-black text-white border-secondary" value="<?php echo $ad['lat']; ?>" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Lng</label>
+                                        <input type="number" step="0.000001" name="lng" id="edit-lng" class="form-control bg-black text-white border-secondary" value="<?php echo $ad['lng']; ?>" required>
+                                    </div>
+                                </div>
+                                <div id="edit-map"></div>
+
+                                <label class="form-label text-warning mt-3">Zarządzaj istniejącymi zdjęciami</label>
+                                <div class="row g-2 overflow-auto" style="max-height: 150px;">
                                     <?php foreach ($photos as $img): ?>
                                         <div class="col-4 position-relative mb-2">
                                             <img src="uploads/<?php echo $img['plik']; ?>" class="img-fluid rounded border border-secondary" style="height: 60px; width: 100%; object-fit: cover;">
@@ -201,6 +214,37 @@ if ($user_id) {
         </div>
     </div>
     <script>
+    var editMap, editMarker;
+
+    document.getElementById('editAdModal').addEventListener('shown.bs.modal', function () {
+        var lat = parseFloat(document.getElementById('edit-lat').value) || 52.2297;
+        var lng = parseFloat(document.getElementById('edit-lng').value) || 21.0122;
+
+        if (!editMap) {
+            editMap = L.map('edit-map').setView([lat, lng], 12);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(editMap);
+
+            editMarker = L.marker([lat, lng], {draggable: true}).addTo(editMap);
+
+            editMap.on('click', function(e) {
+                editMarker.setLatLng(e.latlng);
+                document.getElementById('edit-lat').value = e.latlng.lat.toFixed(6);
+                document.getElementById('edit-lng').value = e.latlng.lng.toFixed(6);
+            });
+
+            editMarker.on('dragend', function(e) {
+                document.getElementById('edit-lat').value = editMarker.getLatLng().lat.toFixed(6);
+                document.getElementById('edit-lng').value = editMarker.getLatLng().lng.toFixed(6);
+            });
+        } else {
+            editMap.setView([lat, lng], 12);
+            editMarker.setLatLng([lat, lng]);
+            editMap.invalidateSize();
+        }
+    });
+
     function addPhotoField() {
         const container = document.getElementById('photo-inputs');
         const div = document.createElement('div');
