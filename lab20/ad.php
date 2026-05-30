@@ -117,8 +117,8 @@ if ($user_id) {
 
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
-                        <a href="https://polska.e-mapa.net/?marker=<?php echo number_format($ad['lng'], 6, '.', ''); ?>,<?php echo number_format($ad['lat'], 6, '.', ''); ?>,4326&zoom=15" target="_blank" class="text-decoration-none text-primary">
-                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w e-mapa.net)</small>
+                        <a href="https://www.openstreetmap.org/?mlat=<?php echo $ad['lat']; ?>&mlon=<?php echo $ad['lng']; ?>#map=18/<?php echo $ad['lat']; ?>/<?php echo $ad['lng']; ?>" target="_blank" class="text-decoration-none text-primary">
+                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w OpenStreetMap)</small>
                         </a>
                     </h4>
                     <div id="map"></div>
