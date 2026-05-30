@@ -29,7 +29,7 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
 $user_role = $_SESSION['lab20_role'] ?? 'guest';
 $is_owner = ($user_id && ($ad['idu'] == $user_id || $user_role === 'admin' || $user_role === 'moderator'));
 
-// Logowanie wyświetlenia (opcjonalnie, zgodnie z logi_ogloszen)
+// Logowanie wyświetlenia
 if ($user_id) {
     logAction($conn, $ido, $user_id, 'wyswietlenie');
 }
@@ -42,7 +42,7 @@ if ($user_id) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         #map { height: 400px; border-radius: 12px; border: 1px solid var(--border-color); }
         .price-big { font-size: 2.5rem; color: #28a745; font-weight: bold; }
@@ -130,7 +130,6 @@ if ($user_id) {
                     <h5>Informacje o autorze</h5>
                     <hr class="border-secondary">
                     <p class="mb-1">Użytkownik: <span class="text-primary fw-bold"><?php echo htmlspecialchars($ad['autor']); ?></span></p>
-                    <p class="small text-secondary">Z nami od: <?php // Tu można by pobrać datę rejestracji ?></p>
                     
                     <?php if ($is_owner): ?>
                         <div class="mt-4 pt-4 border-top border-secondary">
@@ -152,8 +151,8 @@ if ($user_id) {
         </div>
     </div>
 
-    <!-- Modal edycji ogłoszenia -->
     <?php if ($is_owner): ?>
+    <!-- Modal edycji ogłoszenia -->
     <div class="modal fade" id="editAdModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content bg-dark text-light border-secondary">
@@ -186,7 +185,7 @@ if ($user_id) {
                                             <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-info w-100 mb-3" onclick="addPhotoField()">+ Dodaj więcej pól na zdjęcia</button>
+                                    <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addPhotoField('photo-inputs')">+ Dodaj więcej pól</button>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -194,7 +193,6 @@ if ($user_id) {
                                     <label class="form-label">Lokalizacja (tekstowo)</label>
                                     <input type="text" name="lokalizacja_tekst" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
                                 </div>
-                                
                                 <div class="row mb-1">
                                     <div class="col-6">
                                         <label class="form-label">Lat</label>
@@ -207,7 +205,7 @@ if ($user_id) {
                                 </div>
                                 <div id="edit-map"></div>
 
-                                <label class="form-label text-warning mt-3">Zarządzaj istniejącymi zdjęciami</label>
+                                <label class="form-label text-warning mt-3">Zarządzaj zdjęciami</label>
                                 <div class="row g-2 overflow-auto" style="max-height: 150px;">
                                     <?php foreach ($photos as $img): ?>
                                         <div class="col-4 position-relative mb-2">
@@ -215,12 +213,8 @@ if ($user_id) {
                                             <div class="form-check position-absolute top-0 end-0 bg-danger rounded-circle px-1" style="opacity: 0.9;">
                                                 <input class="form-check-input m-0" type="checkbox" name="delete_photos[]" value="<?php echo $img['plik']; ?>" style="width: 15px; height: 15px;">
                                             </div>
-                                            <small class="d-block text-center text-danger" style="font-size: 0.6rem;">Usuń</small>
                                         </div>
                                     <?php endforeach; ?>
-                                    <?php if (empty($photos)): ?>
-                                        <p class="small text-muted ps-2">Brak zdjęć do wyświetlenia.</p>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -233,53 +227,8 @@ if ($user_id) {
             </div>
         </div>
     </div>
-    <script>
-    var editMap, editMarker;
-
-    document.getElementById('editAdModal').addEventListener('shown.bs.modal', function () {
-        var lat = parseFloat(document.getElementById('edit-lat').value) || 52.2297;
-        var lng = parseFloat(document.getElementById('edit-lng').value) || 21.0122;
-
-        if (!editMap) {
-            editMap = L.map('edit-map').setView([lat, lng], 12);
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(editMap);
-
-            editMarker = L.marker([lat, lng], {draggable: true}).addTo(editMap);
-
-            editMap.on('click', function(e) {
-                editMarker.setLatLng(e.latlng);
-                document.getElementById('edit-lat').value = e.latlng.lat.toFixed(6);
-                document.getElementById('edit-lng').value = e.latlng.lng.toFixed(6);
-            });
-
-            editMarker.on('dragend', function(e) {
-                document.getElementById('edit-lat').value = editMarker.getLatLng().lat.toFixed(6);
-                document.getElementById('edit-lng').value = editMarker.getLatLng().lng.toFixed(6);
-            });
-        } else {
-            editMap.setView([lat, lng], 12);
-            editMarker.setLatLng([lat, lng]);
-            editMap.invalidateSize();
-        }
-    });
-
-    function addPhotoField() {
-        const container = document.getElementById('photo-inputs');
-        const div = document.createElement('div');
-        div.className = 'input-group mb-2';
-        div.innerHTML = `
-            <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple>
-            <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.remove()">X</button>
-        `;
-        container.appendChild(div);
-    }
-    </div>
-    <?php endif; ?>
 
     <!-- Modal szybkiego dodawania zdjęć -->
-    <?php if ($is_owner): ?>
     <div class="modal fade" id="addPhotosModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-light border-secondary">
@@ -287,7 +236,7 @@ if ($user_id) {
                     <input type="hidden" name="action" value="add_photos">
                     <input type="hidden" name="ido" value="<?php echo $ido; ?>">
                     <div class="modal-header border-secondary">
-                        <h5 class="modal-title">Dodaj zdjęcia do ogłoszenia</h5>
+                        <h5 class="modal-title">Dodaj zdjęcia</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -296,7 +245,7 @@ if ($user_id) {
                                 <input type="file" name="zdjecia[]" class="form-control bg-black text-white border-secondary" accept="image/*" multiple required>
                             </div>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addQuickPhotoField()">+ Dodaj więcej pól</button>
+                        <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="addPhotoField('quick-photo-inputs')">+ Dodaj więcej pól</button>
                     </div>
                     <div class="modal-footer border-secondary">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
@@ -306,9 +255,16 @@ if ($user_id) {
             </div>
         </div>
     </div>
+    <?php endif; ?>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <script>
-    function addQuickPhotoField() {
-        const container = document.getElementById('quick-photo-inputs');
+    // 1. Funkcja do dodawania pól (wspólna dla obu modali)
+    function addPhotoField(containerId) {
+        const container = document.getElementById(containerId);
         const div = document.createElement('div');
         div.className = 'input-group mb-2';
         div.innerHTML = `
@@ -317,26 +273,43 @@ if ($user_id) {
         `;
         container.appendChild(div);
     }
-    </script>
+
+    // 2. Mapa główna (wyświetlanie)
+    const lat = <?php echo $ad['lat'] ?? 52.2297; ?>;
+    const lng = <?php echo $ad['lng'] ?? 21.0122; ?>;
+    const mainMap = L.map('map').setView([lat, lng], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
+    L.marker([lat, lng]).addTo(mainMap).bindPopup("<b><?php echo htmlspecialchars($ad['tytul']); ?></b>").openPopup();
+
+    // 3. Obsługa mapy w modalu edycji
+    <?php if ($is_owner): ?>
+    let editMap, editMarker;
+    document.getElementById('editAdModal').addEventListener('shown.bs.modal', function () {
+        const modalLat = parseFloat(document.getElementById('edit-lat').value) || 52.2297;
+        const modalLng = parseFloat(document.getElementById('edit-lng').value) || 21.0122;
+
+        if (!editMap) {
+            editMap = L.map('edit-map').setView([modalLat, modalLng], 12);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(editMap);
+            editMarker = L.marker([modalLat, modalLng], {draggable: true}).addTo(editMap);
+
+            editMap.on('click', (e) => {
+                editMarker.setLatLng(e.latlng);
+                updateCoords(e.latlng);
+            });
+            editMarker.on('dragend', () => updateCoords(editMarker.getLatLng()));
+        } else {
+            editMap.setView([modalLat, modalLng], 12);
+            editMarker.setLatLng([modalLat, modalLng]);
+            editMap.invalidateSize();
+        }
+    });
+
+    function updateCoords(latlng) {
+        document.getElementById('edit-lat').value = latlng.lat.toFixed(6);
+        document.getElementById('edit-lng').value = latlng.lng.toFixed(6);
+    }
     <?php endif; ?>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        var lat = <?php echo $ad['lat'] ?? 52.2297; ?>;
-        var lng = <?php echo $ad['lng'] ?? 21.0122; ?>;
-        
-        var map = L.map('map').setView([lat, lng], 13);
-
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-
-        var marker = L.marker([lat, lng]).addTo(map);
-        marker.bindPopup("<b><?php echo htmlspecialchars($ad['tytul']); ?></b><br><?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>").openPopup();
     </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
