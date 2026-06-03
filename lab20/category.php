@@ -115,9 +115,15 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label>Lokalizacja (tekst)</label>
-                                    <input type="text" name="lokalizacja_tekst" class="form-control" required placeholder="np. Warszawa, Centrum">
+                                <div class="row mb-2">
+                                    <div class="col-4">
+                                        <label>Kod pocztowy</label>
+                                        <input type="text" id="add-kod" class="form-control" placeholder="00-000">
+                                    </div>
+                                    <div class="col-8">
+                                        <label>Lokalizacja (tekst)</label>
+                                        <input type="text" name="lokalizacja_tekst" id="add-lok" class="form-control" required placeholder="np. Warszawa, Centrum">
+                                    </div>
                                 </div>
                                 <div class="row mb-1">
                                     <div class="col-6">
@@ -184,6 +190,29 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
         `;
         container.appendChild(div);
     }
+
+    document.getElementById('add-kod').addEventListener('blur', function() {
+        const kod = this.value.trim();
+        if (/^\d{2}-\d{3}$/.test(kod)) {
+            fetch('get_city.php?kod=' + kod)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('add-lok').value = data.miasto;
+                        if (data.lat && data.lng) {
+                            document.getElementById('add-lat').value = data.lat;
+                            document.getElementById('add-lng').value = data.lng;
+                            if (addMap && addMarker) {
+                                const latlng = new L.LatLng(data.lat, data.lng);
+                                addMap.setView(latlng, 12);
+                                addMarker.setLatLng(latlng);
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error('Błąd pobierania miasta:', err));
+        }
+    });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

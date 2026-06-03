@@ -117,10 +117,13 @@ if ($user_id) {
 
                 <div class="mb-5">
                     <h4 class="text-primary border-bottom border-secondary pb-2 mb-3">
-                        <a href="https://www.openstreetmap.org/?mlat=<?php echo $ad['lat']; ?>&mlon=<?php echo $ad['lng']; ?>#map=18/<?php echo $ad['lat']; ?>/<?php echo $ad['lng']; ?>" target="_blank" class="text-decoration-none text-primary">
-                            🗺️ Lokalizacja na mapie (GIS) <small class="text-secondary" style="font-size: 0.8rem;">(otwórz w OpenStreetMap)</small>
-                        </a>
+                        Lokalizacja na mapie (GIS)
                     </h4>
+                    <div class="mb-3 d-flex gap-2 flex-wrap">
+                        <a href="https://www.openstreetmap.org/?mlat=<?php echo $ad['lat']; ?>&mlon=<?php echo $ad['lng']; ?>#map=18/<?php echo $ad['lat']; ?>/<?php echo $ad['lng']; ?>" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ OpenStreetMap</a>
+                        <a href="https://geoportal360.pl/map/#clk=<?php echo $ad['lng']; ?>,<?php echo $ad['lat']; ?>,16" target="_blank" class="btn btn-sm btn-outline-info">🌍 Geoportal360</a>
+                        <a href="https://powietrze.gios.gov.pl/pjp/current" target="_blank" class="btn btn-sm btn-outline-success">💨 Czystość Powietrza (GIÓS)</a>
+                    </div>
                     <div id="map"></div>
                 </div>
             </div>
@@ -189,9 +192,15 @@ if ($user_id) {
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Lokalizacja (tekstowo)</label>
-                                    <input type="text" name="lokalizacja_tekst" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
+                                <div class="row mb-3">
+                                    <div class="col-4">
+                                        <label class="form-label">Kod pocztowy</label>
+                                        <input type="text" id="edit-kod" class="form-control bg-black text-white border-secondary" placeholder="00-000">
+                                    </div>
+                                    <div class="col-8">
+                                        <label class="form-label">Lokalizacja</label>
+                                        <input type="text" name="lokalizacja_tekst" id="edit-lok" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?>" required>
+                                    </div>
                                 </div>
                                 <div class="row mb-1">
                                     <div class="col-6">
@@ -309,6 +318,29 @@ if ($user_id) {
         document.getElementById('edit-lat').value = latlng.lat.toFixed(6);
         document.getElementById('edit-lng').value = latlng.lng.toFixed(6);
     }
+
+    document.getElementById('edit-kod').addEventListener('blur', function() {
+        const kod = this.value.trim();
+        if (/^\d{2}-\d{3}$/.test(kod)) {
+            fetch('get_city.php?kod=' + kod)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('edit-lok').value = data.miasto;
+                        if (data.lat && data.lng) {
+                            document.getElementById('edit-lat').value = data.lat;
+                            document.getElementById('edit-lng').value = data.lng;
+                            if (editMap && editMarker) {
+                                const latlng = new L.LatLng(data.lat, data.lng);
+                                editMap.setView(latlng, 12);
+                                editMarker.setLatLng(latlng);
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error('Błąd pobierania miasta:', err));
+        }
+    });
     <?php endif; ?>
     </script>
 </body>
