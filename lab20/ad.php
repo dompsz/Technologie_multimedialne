@@ -121,8 +121,8 @@ if ($user_id) {
                     </h4>
                     <div class="mb-3 d-flex gap-2 flex-wrap">
                         <a href="https://www.openstreetmap.org/?mlat=<?php echo $ad['lat']; ?>&mlon=<?php echo $ad['lng']; ?>#map=18/<?php echo $ad['lat']; ?>/<?php echo $ad['lng']; ?>" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ OpenStreetMap</a>
-                        <a href="https://geoportal-krajowy.pl/na-mapie?gui=1&location=<?php echo $ad['lat']; ?>,<?php echo $ad['lng']; ?>,17" target="_blank" class="btn btn-sm btn-outline-info">🌊 Geoportal (Zagrożenie Powodziowe)</a>
-                        <a href="https://powietrze.gios.gov.pl/pjp/current#<?php echo $ad['lat']; ?>,<?php echo $ad['lng']; ?>,12" target="_blank" class="btn btn-sm btn-outline-success">💨 Jakość Powietrza (GIÓS)</a>
+                        <a href="https://geoportal-krajowy.pl/na-mapie?lat=<?php echo $ad['lat']; ?>&lon=<?php echo $ad['lng']; ?>&zoom=17" target="_blank" class="btn btn-sm btn-outline-info">🌊 Geoportal (Zagrożenie Powodziowe)</a>
+                        <a href="https://powietrze.gios.gov.pl/pjp/current?query=<?php echo urlencode($ad['lokalizacja_tekst']); ?>" target="_blank" class="btn btn-sm btn-outline-success">💨 Jakość Powietrza (GIÓS)</a>
                     </div>
                     <div id="map"></div>
                 </div>
