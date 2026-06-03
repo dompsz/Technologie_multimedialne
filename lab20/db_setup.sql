@@ -30,6 +30,7 @@ CREATE TABLE `ogloszenia` (
   `ido` int(11) NOT NULL AUTO_INCREMENT,
   `idko` int(11) NOT NULL,
   `idu` int(11) NOT NULL,
+  `kod_pocztowy` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tytul` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `tresc` text COLLATE utf8mb4_unicode_ci,
   `cena` decimal(10,2) DEFAULT NULL,

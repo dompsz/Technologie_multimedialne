@@ -21,12 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tresc = trim($_POST['tresc']);
             $cena = (float)$_POST['cena'];
             $lokalizacja_tekst = trim($_POST['lokalizacja_tekst']);
+            $kod_pocztowy = trim($_POST['kod_pocztowy'] ?? '');
             $lat = (float)$_POST['lat'];
             $lng = (float)$_POST['lng'];
 
             if (!empty($tytul)) {
-                $stmt = $conn->prepare("INSERT INTO ogloszenia (idko, idu, tytul, tresc, cena, lokalizacja_tekst, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$idko, $user_id, $tytul, $tresc, $cena, $lokalizacja_tekst, $lat, $lng]);
+                $stmt = $conn->prepare("INSERT INTO ogloszenia (idko, idu, kod_pocztowy, tytul, tresc, cena, lokalizacja_tekst, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$idko, $user_id, $kod_pocztowy, $tytul, $tresc, $cena, $lokalizacja_tekst, $lat, $lng]);
                 $ido = $conn->lastInsertId();
                 
                 logAction($conn, $ido, $user_id, 'dodanie_ogloszenia');
@@ -77,8 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ad_info = $stmt_check->fetch();
 
             if ($ad_info && ($ad_info['idu'] == $user_id || $user_role === 'admin' || $user_role === 'moderator')) {
-                $stmt = $conn->prepare("UPDATE ogloszenia SET tytul = ?, tresc = ?, cena = ?, lokalizacja_tekst = ?, lat = ?, lng = ? WHERE ido = ?");
-                $stmt->execute([$tytul, $tresc, $cena, $lokalizacja_tekst, $lat, $lng, $ido]);
+                $kod_pocztowy = trim($_POST['kod_pocztowy'] ?? '');
+                $stmt = $conn->prepare("UPDATE ogloszenia SET tytul = ?, tresc = ?, cena = ?, lokalizacja_tekst = ?, kod_pocztowy = ?, lat = ?, lng = ? WHERE ido = ?");
+                $stmt->execute([$tytul, $tresc, $cena, $lokalizacja_tekst, $kod_pocztowy, $lat, $lng, $ido]);
                 
                 logAction($conn, $ido, $user_id, 'edycja_ogloszenia');
 

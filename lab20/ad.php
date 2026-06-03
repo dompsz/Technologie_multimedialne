@@ -69,7 +69,7 @@ if ($user_id) {
                 <h1 class="display-5 fw-bold mb-3"><?php echo htmlspecialchars($ad['tytul']); ?></h1>
                 <div class="mb-4">
                     <span class="badge bg-primary px-3 py-2"><?php echo htmlspecialchars($ad['nazwa_kategorii']); ?></span>
-                    <span class="text-secondary ms-3">📍 <?php echo htmlspecialchars($ad['lokalizacja_tekst']); ?></span>
+                    <span class="text-secondary ms-3">📍 <?php echo htmlspecialchars($ad['kod_pocztowy'] . ' ' . $ad['lokalizacja_tekst']); ?></span>
                     <span class="text-secondary ms-3">🕒 <?php echo date('d.m.Y H:i', strtotime($ad['datagodzina'])); ?></span>
                 </div>
 
@@ -121,8 +121,8 @@ if ($user_id) {
                     </h4>
                     <div class="mb-3 d-flex gap-2 flex-wrap">
                         <a href="https://www.openstreetmap.org/?mlat=<?php echo $ad['lat']; ?>&mlon=<?php echo $ad['lng']; ?>#map=18/<?php echo $ad['lat']; ?>/<?php echo $ad['lng']; ?>" target="_blank" class="btn btn-sm btn-outline-primary">🗺️ OpenStreetMap</a>
-                        <a href="https://geoportal360.pl/map/#clk=<?php echo $ad['lng']; ?>,<?php echo $ad['lat']; ?>,16" target="_blank" class="btn btn-sm btn-outline-info">🌍 Geoportal360</a>
-                        <a href="https://powietrze.gios.gov.pl/pjp/current" target="_blank" class="btn btn-sm btn-outline-success">💨 Czystość Powietrza (GIÓS)</a>
+                        <a href="https://geoportal360.pl/map/#l:<?php echo $ad['lat']; ?>,<?php echo $ad['lng']; ?>,17&stl=flood" target="_blank" class="btn btn-sm btn-outline-info">🌊 Geoportal (Zagrożenie Powodziowe)</a>
+                        <a href="https://powietrze.gios.gov.pl/pjp/current" target="_blank" class="btn btn-sm btn-outline-success">💨 Jakość Powietrza (GIÓS)</a>
                     </div>
                     <div id="map"></div>
                 </div>
@@ -195,7 +195,7 @@ if ($user_id) {
                                 <div class="row mb-3">
                                     <div class="col-4">
                                         <label class="form-label">Kod pocztowy</label>
-                                        <input type="text" id="edit-kod" class="form-control bg-black text-white border-secondary" placeholder="00-000">
+                                        <input type="text" id="edit-kod" name="kod_pocztowy" class="form-control bg-black text-white border-secondary" value="<?php echo htmlspecialchars($ad['kod_pocztowy'] ?? ''); ?>" placeholder="00-000">
                                     </div>
                                     <div class="col-8">
                                         <label class="form-label">Lokalizacja</label>

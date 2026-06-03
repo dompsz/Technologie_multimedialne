@@ -118,7 +118,7 @@ $user_id = $_SESSION['lab20_user_id'] ?? null;
                                 <div class="row mb-2">
                                     <div class="col-4">
                                         <label>Kod pocztowy</label>
-                                        <input type="text" id="add-kod" class="form-control" placeholder="00-000">
+                                        <input type="text" id="add-kod" name="kod_pocztowy" class="form-control" placeholder="00-000">
                                     </div>
                                     <div class="col-8">
                                         <label>Lokalizacja (tekst)</label>
